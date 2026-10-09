@@ -1,0 +1,116 @@
+rules_version = '2';
+
+// Scheduling Agent security rules.
+// The owner can read and change everything in their business.
+// Employees can only:
+//   - read the business name/logo/colors and the published schedule,
+//   - read and write their own availability and their own settings,
+//   - read cover requests sent to them, and answer them (accept or decline).
+// Pairings, hour ranges, preferences and drafts are owner-only.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function biz(bid) { return /databases/$(database)/documents/businesses/$(bid); }
+    function isOwner(bid) { return signedIn() && get(biz(bid)).data.ownerUid == request.auth.uid; }
+    function memberPath(bid) { return /databases/$(database)/documents/businesses/$(bid)/members/$(request.auth.uid); }
+    function isMember(bid) { return signedIn() && exists(memberPath(bid)); }
+    function myPid(bid) { return get(memberPath(bid)).data.pid; }
+
+    // Which business a signed-in person belongs to.
+    match /users/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow create: if signedIn() && request.auth.uid == uid && (
+        (request.resource.data.role == 'owner' && request.resource.data.bid == uid) ||
+        (request.resource.data.role == 'employee'
+          && getAfter(/databases/$(database)/documents/businesses/$(request.resource.data.bid)/members/$(uid)).data.pid == request.resource.data.pid)
+      );
+      allow update, delete: if false;
+    }
+
+    // One-time invite links. Anyone holding the link can look it up (the token is unguessable);
+    // nobody can list them.
+    match /invites/{token} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if isOwner(request.resource.data.bid) && request.resource.data.usedBy == null;
+      allow update: if signedIn()
+        && resource.data.usedBy == null
+        && request.resource.data.usedBy == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedBy', 'usedAt'])
+        && existsAfter(/databases/$(database)/documents/businesses/$(resource.data.bid)/members/$(request.auth.uid));
+      allow delete: if isOwner(resource.data.bid);
+    }
+
+    match /businesses/{bid} {
+      allow get: if isOwner(bid) || isMember(bid);
+      allow list: if false;
+      allow create: if signedIn() && bid == request.auth.uid && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if isOwner(bid) && request.resource.data.ownerUid == resource.data.ownerUid;
+      allow delete: if false;
+
+      // Owner-only: full setup and weekly drafts.
+      match /owner/{doc} { allow read, write: if isOwner(bid); }
+      match /weeks/{wk} { allow read, write: if isOwner(bid); }
+
+      // The published schedule: the whole team can read it.
+      match /published/{wk} {
+        allow read: if isOwner(bid) || isMember(bid);
+        allow write: if isOwner(bid);
+      }
+
+      // Joining: only with a valid, unused invite for this business and person.
+      match /members/{uid} {
+        allow read: if isOwner(bid) || (signedIn() && request.auth.uid == uid);
+        allow create: if signedIn() && request.auth.uid == uid
+          && request.resource.data.role == 'employee'
+          && get(/databases/$(database)/documents/invites/$(request.resource.data.invite)).data.bid == bid
+          && get(/databases/$(database)/documents/invites/$(request.resource.data.invite)).data.pid == request.resource.data.pid
+          && get(/databases/$(database)/documents/invites/$(request.resource.data.invite)).data.usedBy == null;
+        allow update: if false;
+        allow delete: if isOwner(bid);
+      }
+
+      // Availability: one document per person per week, named "<week>_<person>".
+      match /avail/{id} {
+        allow read: if isOwner(bid) || (isMember(bid) && resource.data.pid == myPid(bid));
+        allow create, update: if isOwner(bid) || (isMember(bid)
+          && request.resource.data.pid == myPid(bid)
+          && id == request.resource.data.wk + '_' + myPid(bid));
+        allow delete: if isOwner(bid);
+      }
+
+      // A person's own settings (for now: whether they get cover requests).
+      match /prefs/{pid} {
+        allow read, write: if isOwner(bid) || (isMember(bid) && pid == myPid(bid));
+      }
+
+      // Shift cover requests.
+      match /requests/{rid} {
+        allow read: if isOwner(bid) || (isMember(bid) && myPid(bid) in resource.data.sent);
+        allow create, delete: if isOwner(bid);
+        allow update: if isOwner(bid) || (isMember(bid) && validAnswer(bid));
+      }
+
+      // An employee may only answer for themselves, only while the request is open.
+      // Accepting fills it. Declining may hand the request to the next person in line.
+      function validAnswer(bid) {
+        let me = myPid(bid);
+        let before = resource.data;
+        let after = request.resource.data;
+        return me in before.sent
+          && before.status == 'open'
+          && after.diff(before).affectedKeys().hasOnly(['resp', 'status', 'filledBy', 'sent'])
+          && after.resp.diff(before.resp).affectedKeys().hasOnly([me])
+          && (
+            (after.resp[me] == 'accepted' && after.status == 'filled' && after.filledBy == me && after.sent == before.sent)
+            || (after.resp[me] == 'declined'
+                && after.status in ['open', 'none']
+                && after.get('filledBy', null) == before.get('filledBy', null)
+                && after.sent.size() >= before.sent.size()
+                && after.sent == before.order[0:after.sent.size()])
+          );
+      }
+    }
+  }
+}

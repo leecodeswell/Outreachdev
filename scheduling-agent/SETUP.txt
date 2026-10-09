@@ -1,0 +1,33 @@
+SCHEDULING AGENT: CONNECTING SIGN-IN AND TEAM ACCESS
+====================================================
+
+Files in this folder
+  index.html, app.css, app.js, solver.js, favicon.svg   the app
+  cloud.js         talks to Firebase (sign-in + shared data)
+  config.js        YOUR Firebase settings go here
+  firestore.rules  the security rules (who can see and change what)
+
+1. Paste your settings
+   Open config.js. Replace   window.SA_FIREBASE_CONFIG = null;
+   with the firebaseConfig block from Firebase, like:
+   window.SA_FIREBASE_CONFIG = { apiKey: "...", authDomain: "...", projectId: "...", ... };
+
+2. Turn on the security rules (important)
+   Firebase console > Build > Firestore Database > Rules tab.
+   Delete what's there, paste the whole contents of firestore.rules, press Publish.
+
+3. Put the folder online
+   Copy this whole folder into your website repo as "scheduling-agent", commit and push.
+   It will be at https://outreachdev.dev/scheduling-agent/
+   (To test on your computer first: run  py -m http.server 8000  in this folder
+    and open http://localhost:8000 . localhost is already allowed in Firebase.)
+
+4. First sign-in
+   Open the app, create your account (or use Google), then "Create my workspace".
+   If you set things up earlier in this same browser, tick "Bring in what's saved in this browser".
+
+5. Invite your team
+   Team page > Invite next to a person > send them the link.
+   They sign in with Google or email and land on their own phone view.
+
+Without step 1 the app still works, saving only in your browser like before.
