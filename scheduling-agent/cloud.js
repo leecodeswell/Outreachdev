@@ -23,9 +23,31 @@
   if (!cfg && !fake) return;
   C.enabled = true; C.status = "loading";
 
-  var F, auth, db, bid = null, pid = null, unsub = [], last = {}, timer = null, binding = null, emp = null;
+  var F, fbApp, auth, db, fnMod = null, bid = null, pid = null, unsub = [], last = {}, timer = null, binding = null, emp = null;
   var listeners = [];
   C.onChange = function (fn) { listeners.push(fn); };
+
+  /* ---------- billing: free trial, then a paid plan ----------
+     The trial start is stamped by the server when the workspace is created (users/{uid}.created).
+     "Paid" lives in businesses/{bid}/billing/plan, which only the server (or you, in the
+     Firebase console) can write. firestore.rules refuses owner edits once the trial has
+     ended and nothing is paid, so this is enforced there, not just in this page. */
+  C.billing = { paid: false, plan: null, ai: false, createdMs: null };
+  var BILL = window.SA_BILLING || {};
+  C.trialDays = BILL.trialDays || 14;
+  function tsMs(t) { return !t ? null : typeof t.toMillis === "function" ? t.toMillis() : t.__ts ? t.__ts : typeof t === "number" ? t : null; }
+  C.access = function () {
+    var b = C.billing;
+    if (b.paid) return { state: "paid", plan: b.plan };
+    if (b.createdMs == null) return { state: "legacy" };          // workspaces made before billing existed stay open
+    var left = b.createdMs + C.trialDays * 864e5 - Date.now();
+    return left > 0 ? { state: "trial", days: Math.ceil(left / 864e5) } : { state: "locked" };
+  };
+  C.checkoutUrl = function (url) {
+    if (!url) return null;
+    var q = "checkout[custom][bid]=" + encodeURIComponent(bid || "") + "&checkout[email]=" + encodeURIComponent((C.user && C.user.email) || "");
+    return url + (url.indexOf("?") < 0 ? "?" : "&") + q;
+  };
   function emit() { listeners.forEach(function (fn) { try { fn(); } catch (e) { console.error(e); } }); }
   function fail(msg, e) { if (e) console.error(e); C.error = msg; emit(); }
 
@@ -53,7 +75,7 @@
     .then(function (ms) { return Object.assign.apply(Object, [{}].concat(ms)); }))
     .then(function (mod) {
       F = mod;
-      var app = F.initializeApp(cfg || {});
+      var app = fbApp = F.initializeApp(cfg || {});
       auth = F.getAuth(app); db = F.getFirestore(app);
       if (C.invite) F.getDoc(d("invites/" + C.invite.token)).then(function (s) { C.invite.data = s.exists() ? s.data() : null; C.invite.checked = true; emit(); }).catch(function () { C.invite.checked = true; emit(); });
       if (F.isSignInWithEmailLink && F.isSignInWithEmailLink(auth, location.href)) {
@@ -112,7 +134,7 @@
     C.status = "loading"; emit();
     F.getDoc(d("users/" + C.user.uid)).then(function (s) {
       if (s.exists()) {
-        C.profile = s.data(); bid = C.profile.bid; pid = C.profile.pid || null;
+        C.profile = s.data(); bid = C.profile.bid; pid = C.profile.pid || null; C.billing.createdMs = tsMs(C.profile.created);
         try { sessionStorage.removeItem("sa.invite"); } catch (e) { } C.invite = null;
         if (C.profile.role === "owner") startOwner(); else startEmployee();
       } else {
@@ -126,9 +148,9 @@
     var uid = C.user.uid; bid = uid;
     var b = F.writeBatch(db);
     b.set(d("businesses/" + bid), publicDoc(state, uid));
-    b.set(d("users/" + uid), { bid: bid, role: "owner", email: C.user.email || "", at: Date.now() });
+    b.set(d("users/" + uid), { bid: bid, role: "owner", email: C.user.email || "", created: F.serverTimestamp() });
     return b.commit().then(function () {
-      C.profile = { bid: bid, role: "owner" };
+      C.profile = { bid: bid, role: "owner" }; C.billing.createdMs = Date.now();
       return writeAll(state);
     }).then(function () { startOwner(); }).catch(function (e) { fail("Couldn't create your workspace. Check that Firestore is set up, then try again.", e); });
   };
@@ -187,6 +209,11 @@
   }
   function week(S, wk) { var w = S.weeks[wk] = S.weeks[wk] || {}; w.avail = w.avail || {}; w.submitted = w.submitted || {}; w.requests = w.requests || []; return w; }
   function listenOwner() {
+    unsub.push(F.onSnapshot(d(B("billing/plan")), function (snap) {
+      var x = snap.exists() ? snap.data() : {};
+      C.billing.paid = x.paid === true; C.billing.plan = x.plan || null; C.billing.ai = x.ai === true;
+      emit();
+    }, function () { }));
     unsub.push(F.onSnapshot(col(B("avail")), function (snap) {
       var S = binding.get(), changed = false;
       snap.docChanges().forEach(function (ch) {
@@ -230,7 +257,7 @@
     }, function () { }));
   }
   C.ownerSave = function () {
-    if (C.status !== "owner" || !binding) return;
+    if (C.status !== "owner" || !binding || C.access().state === "locked") return;
     clearTimeout(timer);
     timer = setTimeout(function () {
       var docs = toDocs(binding.get()), b = F.writeBatch(db), n = 0, wrote = {};
@@ -240,6 +267,24 @@
       b.commit().then(function () { Object.assign(last, wrote); C.saving = false; C.error = null; emit(); })
         .catch(function (e) { C.saving = false; fail("Couldn't save your last change. Check your connection; it will retry with your next edit.", e); });
     }, 700);
+  };
+
+
+  /* ---------- owner: AI helper (runs on a Firebase function that holds the key) ---------- */
+  C.askHelper = function (messages, context) {
+    if (C.status !== "owner") return Promise.reject({ message: "Sign in as the owner to use the helper." });
+    var load = fnMod ? Promise.resolve(fnMod) : (fake ? Promise.resolve(fake) : import(base + "firebase-functions.js")).then(function (m) { return (fnMod = m); });
+    return load.then(function (m) {
+      var call = m.httpsCallable(m.getFunctions(fbApp, "us-central1"), "helper");
+      return call({ messages: messages, context: context });
+    }).then(function (r) { return r.data; }).catch(function (e) {
+      var c = String((e && e.code) || ""), msg = "The helper couldn't answer. Try again.";
+      if (/not-found|unimplemented/.test(c)) msg = "The helper isn't switched on for this workspace yet.";
+      else if (/resource-exhausted/.test(c)) msg = (e.message || "").replace(/^.*?:\s*/, "") || "You've reached today's limit for the helper.";
+      else if (/permission-denied|unauthenticated/.test(c)) msg = "Only the signed-in owner can use the helper.";
+      else if (/unavailable|internal|deadline/.test(c) && e.message && !/^(internal|unavailable)$/i.test(e.message)) msg = e.message;
+      throw { message: msg };
+    });
   };
 
   /* ---------- owner: invites ---------- */

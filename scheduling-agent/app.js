@@ -33,7 +33,7 @@
       q: "Do call-outs leave you scrambling for cover?", qd: "Get a ranked list and ask people in order." },
     { key: "weights", name: "Priority sliders", desc: "Choose how much each preference counts when they conflict.",
       q: "Want to fine-tune what matters most?", qd: "Adds sliders for preferences, pairings, fairness and rest." },
-    { key: "ai", name: "AI scheduling helper", desc: "Ask questions and make changes in plain words.", q: null, soon: true }
+    { key: "ai", name: "AI scheduling helper", desc: "Ask questions and make changes in plain words.", q: null }
   ];
   var OPT = FEATURES.map(function (f) { return f.key; });
 
@@ -429,8 +429,11 @@
     else if (S.ui.viewAs && person(S.ui.viewAs)) html = renderEmployee();
     else { S.ui.viewAs = null; html = renderFrame(); }
     html += renderOverlays();
+    if (access().state === "locked") html += renderLock();
     app.innerHTML = html;
     var m2 = $(".main"); if (m2) m2.scrollTop = y;
+    var lg = document.getElementById("chat-log"); if (lg) lg.scrollTop = lg.scrollHeight;
+    if (T.helper && T.helperFocus) { var hi = document.getElementById("helper-in"); if (hi && !hi.disabled) { hi.focus(); hi.setSelectionRange(hi.value.length, hi.value.length); } }
     positionPop();
     save();
   }
@@ -441,6 +444,37 @@
     if (T.modal) h += '<div class="scrim" data-act="close"></div><div class="modal-wrap" data-act="close-self"><div class="modal" role="dialog" aria-modal="true">' + renderModal() + "</div></div>";
     if (T.pop) h += '<div class="scrim" style="background:transparent" data-act="close-pop"></div><div class="pop" id="pop">' + renderPop() + "</div>";
     return h;
+  }
+
+  /* ------------------------------------------------------------------
+     Plans: free trial, then pay once or monthly (see config.js and firestore.rules)
+     ------------------------------------------------------------------ */
+  function access() { return CLOUD && SACloud.status === "owner" && SACloud.access ? SACloud.access() : { state: "local" }; }
+  function planCards() {
+    var cfg = window.SA_BILLING || {}, plans = cfg.plans || [];
+    if (!plans.length) return "";
+    return '<div class="plans">' + plans.map(function (pl) {
+      var url = SACloud.checkoutUrl(pl.url);
+      return '<div class="plan"><b>' + esc(pl.label) + '</b><div class="price"><span class="tnum">' + esc(pl.price) + "</span> <small>" + esc(pl.per || "") + "</small></div><p>" + esc(pl.note || "") + "</p>" +
+        (url ? '<a class="btn btn-primary" href="' + esc(url) + '" target="_blank" rel="noopener">Choose ' + esc(pl.label.toLowerCase()) + "</a>"
+          : '<span class="faint" style="font-size:12.5px">Checkout opens soon. Email ' + esc(cfg.contact || "us") + " to get started.</span>") + "</div>";
+    }).join("") + "</div>";
+  }
+  function planSection() {
+    var a = access(), cfg = window.SA_BILLING || {}, txt;
+    if (a.state === "paid") txt = "<b>" + (a.plan === "monthly" ? "Monthly plan" : "Paid. Thank you!") + "</b><span>" + (a.plan === "monthly" ? "Your subscription is active." : "You own Scheduling Agent. Updates to version 1 are included.") + "</span>";
+    else if (a.state === "trial") txt = "<b>Free trial: " + plural(a.days, "day") + " left</b><span>Everything works. Choose a plan any time to keep editing after the trial.</span>";
+    else if (a.state === "legacy") txt = "<b>Early access</b><span>This workspace was created before plans existed, so it stays open.</span>";
+    else txt = "<b>Trial ended</b><span>Choose a plan to keep editing.</span>";
+    return '<div class="set-section"><h2>Plan</h2><div class="card set-list"><div class="set-row"><div class="txt">' + txt + "</div></div>" +
+      (a.state === "paid" || a.state === "legacy" ? "" : '<div class="set-row" style="display:block">' + planCards() + "</div>") + "</div></div>";
+  }
+  function renderLock() {
+    var cfg = window.SA_BILLING || {};
+    return '<div class="lock-wrap"><div class="card lock"><h2>Your free trial has ended</h2>' +
+      "<p>Your schedule, team and shifts are safe. Choose a plan to keep editing. Your team can still see published schedules.</p>" + planCards() +
+      '<div class="row" style="margin-top:14px"><button class="btn btn-sm" data-act="reload">I\'ve paid, refresh</button><button class="btn btn-sm" data-act="backup">' + icon("download") + 'Download my data</button><span class="spacer"></span><button class="btn btn-sm btn-ghost" data-act="sign-out">Sign out</button></div>' +
+      '<p class="faint" style="font-size:12px;margin:10px 0 0">Questions? ' + esc(cfg.contact || "") + "</p></div></div>";
   }
 
   function renderFrame() {
@@ -459,6 +493,7 @@
       '<a class="brand" href="#" data-act="nav" data-v="schedule"><span class="mark"><svg viewBox="0 0 28 28" aria-hidden="true"><use href="#o-mark"/></svg></span><span><b>Scheduling Agent</b><small>by Outreachdev</small></span></a>' +
       companyHTML() +
       '<span class="top-spacer"></span>' +
+      (access().state === "trial" ? '<button class="pill ' + (access().days <= 3 ? "pill-warn" : "pill-draft") + '" style="border:0" data-act="nav" data-v="settings" title="See plans">Trial: ' + access().days + (access().days === 1 ? " day" : " days") + " left</button>" : "") +
       '<button class="pill pill-accent" style="border:0" data-act="nav" data-v="settings" title="Change in Settings">' + modeName() + "</button>" +
       '<label class="viewas"><span>View as</span><select class="input input-sm" data-change="viewas" aria-label="View as">' +
       '<option value="">Owner (you)</option>' +
@@ -1142,6 +1177,7 @@
       '<div class="set-row"><div class="txt"><b>Time format</b></div><div class="seg"><button class="' + (S.business.clock === 12 ? "on" : "") + '" data-act="biz-clock" data-v="12">1:00pm</button><button class="' + (S.business.clock === 24 ? "on" : "") + '" data-act="biz-clock" data-v="24">13:00</button></div></div>' +
       '<div class="set-row"><div class="txt"><b>Allow two shifts in one day</b><span>Off means at most one shift per person per day.</span></div><label class="switch"><input type="checkbox" data-change="biz-doubles"' + (S.business.allowDoubles ? " checked" : "") + "><span></span></label></div>" +
       '<div class="set-row"><div class="txt"><b>If someone hasn\'t given availability</b><span>For days with nothing entered and no usual week.</span></div><select class="input" style="width:auto" data-change="biz-missing"><option value="available"' + (S.business.missingAvail !== "unavailable" ? " selected" : "") + '>Treat as available</option><option value="unavailable"' + (S.business.missingAvail === "unavailable" ? " selected" : "") + ">Don't schedule them</option></select></div></div></div>";
+    if (CLOUD) h += planSection();
     h += '<div class="set-section"><h2>Account</h2><div class="card set-list">' + (CLOUD
       ? '<div class="set-row"><div class="txt"><b>Signed in</b><span>' + esc((SACloud.user && SACloud.user.email) || "") + ". Your schedule is saved to your account and works on any device.</span></div><button class=\"btn btn-sm\" data-act=\"sign-out\">Sign out</button></div>"
       : '<div class="set-row"><div class="txt"><b>Not connected</b><span>This copy saves only in this browser. Once your Firebase settings are added to config.js, you\'ll sign in here and can invite your team.</span></div></div>') + "</div></div>";
@@ -1238,14 +1274,126 @@
   }
 
   /* ------------------------------------------------------------------
-     AI helper (placeholder until the full app)
+     AI helper: a chat that can read this week and propose changes.
+     It runs on a Firebase function (the key never reaches the browser).
+     Changes are only proposed; the owner presses Apply.
      ------------------------------------------------------------------ */
+  var HELPER_EX = ["Who is working Saturday?", "Why is the schedule short on Friday?", "Give {name} Friday off and fix the schedule.", "Who is closest to their max hours?"];
+  function chat() { return T.chat || (T.chat = { msgs: [], busy: false, draft: "", error: "" }); }
+  function helperReady() { return CLOUD && SACloud.status === "owner"; }
+
+  function helperContext() {
+    var key = weekKey(), w = wk(key), dates = weekDates(key).map(iso), list = instances(key);
+    var A = analysis(key);
+    var show = function (v) { return !v ? "unset" : v.s === "off" ? "off" : v.s === "win" ? v.from + "-" + v.to : "any"; };
+    return {
+      business: S.business.name || "", week: key, weekStartsOn: DAYS[S.business.weekStart], dates: dates,
+      dayNames: dates.map(function (d) { return DAYS[parseISO(d).getDay()]; }),
+      roles: S.roles.map(function (r) { return { id: r.id, name: r.name }; }),
+      people: S.people.map(function (p) {
+        var av = {}; dates.forEach(function (d) { av[d] = show(availOf(p, key, d).v); });
+        return { id: p.id, name: p.name, type: p.type === "fixed" ? "set schedule" : "part-time", roles: (p.roles || []).map(function (r) { return (role(r) || {}).name; }).filter(Boolean),
+          minHours: +p.min || 0, maxHours: p.max === "" || p.max == null ? null : +p.max, availability: av };
+      }),
+      shifts: list.map(function (it) {
+        return { key: it.key, date: it.date, day: DAYS[it.dow], name: it.name, start: it.start, end: it.end, needed: it.count,
+          assigned: (w.assign[it.key] || []).filter(person) };
+      }),
+      problems: A.issues.slice(0, 25).map(function (is) { return issueText(is, key).t; }),
+      published: w.status === "published"
+    };
+  }
+
+  function helperDescribe(a) {
+    var P = function (id) { return (person(id) || {}).name || "someone"; };
+    var key = weekKey();
+    if (a.type === "regenerate") return { t: "Re-run the automatic scheduler (shifts you've locked stay)", ok: true };
+    var p = person(a.person);
+    if (!p) return { t: "Someone who isn't on your team", ok: false };
+    if (a.type === "time_off") {
+      var ds = (a.dates || []).filter(function (d) { return weekDates(key).some(function (x) { return iso(x) === d; }); });
+      return { t: P(a.person) + " off " + ds.map(function (d) { return dateLabel(d); }).join(", "), ok: ds.length > 0 };
+    }
+    var it = instByKey(key, a.shift);
+    if (!it) return { t: (a.type === "assign" ? "Add " : "Remove ") + P(a.person) + " (shift not found)", ok: false };
+    return { t: (a.type === "assign" ? "Put " + P(a.person) + " on " : "Take " + P(a.person) + " off ") + it.name + ", " + dateLabel(it.date) + " " + fmtT(it.start) + "–" + fmtT(it.end), ok: true };
+  }
+
+  function helperApply(actions) {
+    var key = weekKey(), w = wk(key), n = 0, regen = false;
+    actions.forEach(function (a) {
+      if (a.type === "regenerate") { regen = true; return; }
+      var p = person(a.person); if (!p) return;
+      if (a.type === "time_off") {
+        (a.dates || []).forEach(function (d) {
+          if (!weekDates(key).some(function (x) { return iso(x) === d; })) return;
+          setAvail(p.id, d, { s: "off" });
+          instances(key).forEach(function (it) {
+            if (it.date !== d) return;
+            var arr = w.assign[it.key] || [], L = w.locks[it.key] || {};
+            if (L[p.id] === "fixed") w.fixedSkip[it.key + "|" + p.id] = true;
+            w.assign[it.key] = arr.filter(function (x) { return x !== p.id; }); delete L[p.id];
+            pubEdit(w, it.key, function (pp) { var j = pp.indexOf(p.id); if (j >= 0) pp.splice(j, 1); });
+          });
+          n++;
+        });
+      } else if (a.type === "assign") {
+        var it = instByKey(key, a.shift); if (!it) return;
+        var arr = w.assign[it.key] || (w.assign[it.key] = []);
+        if (arr.indexOf(p.id) < 0) arr.push(p.id);
+        (w.locks[it.key] = w.locks[it.key] || {})[p.id] = true; delete w.blocked[it.key + "|" + p.id]; n++;
+      } else if (a.type === "unassign") {
+        var it2 = instByKey(key, a.shift); if (!it2) return;
+        var L2 = w.locks[it2.key] || {};
+        if (L2[p.id] === "fixed") w.fixedSkip[it2.key + "|" + p.id] = true;
+        w.assign[it2.key] = (w.assign[it2.key] || []).filter(function (x) { return x !== p.id; }); delete L2[p.id]; n++;
+      }
+    });
+    markEdited(w);
+    if (regen) { generate(); return n + 1; }
+    return n;
+  }
+
+  function helperSend(text) {
+    var c = chat(); text = String(text || "").trim();
+    if (!text || c.busy || !helperReady()) return;
+    c.msgs.push({ role: "user", text: text }); c.draft = ""; c.error = ""; c.busy = true;
+    render();
+    var history = c.msgs.map(function (m) { return { role: m.role, text: m.text }; });
+    SACloud.askHelper(history, helperContext()).then(function (r) {
+      c.msgs.push({ role: "assistant", text: r.text, actions: (r.actions || []).length ? r.actions : null, state: "open" });
+    }).catch(function (e) { c.error = (e && e.message) || "The helper couldn't answer. Try again."; })
+      .then(function () { c.busy = false; render(); });
+  }
+
   function renderHelper() {
-    var h = '<button class="helper-fab" data-act="helper">' + icon("sparkle") + "Helper</button>";
-    if (T.helper) h += '<div class="card helper"><div class="row"><b style="flex:1">' + icon("sparkle") + ' Scheduling helper</b><button class="btn btn-icon btn-ghost btn-sm" data-act="helper" aria-label="Close">' + icon("x") + "</button></div>" +
-      '<p class="muted" style="font-size:13px">In the full app you\'ll be able to ask things like:</p>' +
-      ['"Why is Ava on Saturday close?"', '"Give Ben Friday off and fix the schedule."', '"Who can cover Sunday open?"', '"Paste in the availability texts from my team."'].map(function (x) { return '<div class="ex">' + esc(x) + "</div>"; }).join("") +
-      '<div class="row"><input class="input" placeholder="Arrives with the full app" disabled><button class="btn btn-icon" disabled aria-label="Send">' + icon("send") + "</button></div></div>";
+    var c = chat(), h = '<button class="helper-fab" data-act="helper">' + icon("sparkle") + "Helper</button>";
+    if (!T.helper) return h;
+    h += '<div class="card helper"><div class="row"><b style="flex:1">' + icon("sparkle") + ' Scheduling helper</b>' +
+      (c.msgs.length ? '<button class="btn btn-sm btn-ghost" data-act="helper-clear">New chat</button>' : "") +
+      '<button class="btn btn-icon btn-ghost btn-sm" data-act="helper" aria-label="Close">' + icon("x") + "</button></div>";
+    if (!helperReady()) {
+      return h + '<div class="note">' + icon("info") + "<span>" + (CLOUD ? "Sign in as the owner to use the helper." : "The helper works once your workspace is online (it needs a sign-in). Here's what you'll be able to ask:") + "</span></div>" +
+        (CLOUD ? "" : HELPER_EX.map(function (x) { return '<div class="ex">' + esc(x.replace("{name}", (S.people[0] || {}).name || "Ben")) + "</div>"; }).join("")) + "</div>";
+    }
+    h += '<div class="chat" id="chat-log">';
+    if (!c.msgs.length) {
+      h += '<p class="muted" style="font-size:13px;margin:0">Ask about this week, or tell me what to change. I\'ll show you a change before anything happens.</p>' +
+        HELPER_EX.map(function (x) { var t = x.replace("{name}", (S.people[0] || {}).name || "Ben"); return '<button class="ex ex-btn" data-act="helper-ex" data-t="' + esc(t) + '">' + esc(t) + "</button>"; }).join("");
+    }
+    c.msgs.forEach(function (m, i) {
+      h += '<div class="bub ' + (m.role === "user" ? "me" : "ai") + '">' + esc(m.text).replace(/\n/g, "<br>") + "</div>";
+      if (m.actions) {
+        var d = m.actions.map(helperDescribe), okN = d.filter(function (x) { return x.ok; }).length; if (okN) d = d.filter(function (x) { return x.ok; });
+        h += '<div class="prop"><b>' + (m.state === "done" ? "Applied" : m.state === "no" ? "Dismissed" : "Proposed changes") + "</b><ul>" +
+          d.map(function (x) { return "<li" + (x.ok ? "" : ' class="bad"') + ">" + esc(x.t) + "</li>"; }).join("") + "</ul>" +
+          (m.state === "open" ? '<div class="row"><button class="btn btn-sm btn-primary" data-act="helper-apply" data-i="' + i + '"' + (okN ? "" : " disabled") + ">" + icon("check") + 'Apply</button><button class="btn btn-sm" data-act="helper-dismiss" data-i="' + i + '">Not now</button></div>' : "") + "</div>";
+      }
+    });
+    if (c.busy) h += '<div class="bub ai typing"><i></i><i></i><i></i></div>';
+    if (c.error) h += '<div class="note note-warn">' + icon("alert") + "<span>" + esc(c.error) + "</span></div>";
+    h += '</div><div class="send-row"><input class="input" id="helper-in" placeholder="Ask or tell me what to change" value="' + esc(c.draft) + '" data-enter="helper-go" autocomplete="off" maxlength="600"' + (c.busy ? " disabled" : "") + '><button class="btn btn-icon btn-primary" data-act="helper-go" aria-label="Send"' + (c.busy ? " disabled" : "") + ">" + icon("send") + "</button></div>" +
+      '<p class="faint" style="font-size:11.5px;margin:0">AI can make mistakes. Check changes before you apply them.</p></div>';
     return h;
   }
 
@@ -1268,6 +1416,7 @@
       if (T.importLocal == null) T.importLocal = !!has;
       return h + "<h1>Create your workspace</h1><p>This is where your team, shifts and schedules will live. You can invite your team once it's set up.</p></div><div class=\"ob-body\">" + err +
         (has ? '<label class="q" style="cursor:pointer"><input type="checkbox" data-change="au-import"' + (T.importLocal ? " checked" : "") + '><span class="txt"><b>Bring in what\'s saved in this browser</b><span>' + esc(browserData.business.name || "Your setup") + " · " + people(browserData.people.length) + " · " + plural(browserData.shifts.length, "shift") + "</span></span></label>" : "") +
+        '<div class="note">' + icon("sparkle") + "<span>Free for " + ((window.SA_BILLING || {}).trialDays || 14) + " days. No card needed.</span></div>" +
         '<div class="note">' + icon("user") + "<span>Signed in as " + esc((C.user && C.user.email) || "") + '. <a href="#" data-act="sign-out">Not you?</a></span></div></div>' +
         '<div class="ob-foot"><span class="spacer"></span><button class="btn btn-primary" data-act="au-create">Create my workspace</button></div></div></div>';
     }
@@ -1606,7 +1755,15 @@
     "close-self": function (el, ev) { if (ev.target === el) { T.modal = null; } else return false; },
     nav: function (el, ev) { ev.preventDefault(); S.ui.view = el.dataset.v; T.drawer = null; T.modal = null; },
     week: function (el) { var d = +el.dataset.d; S.ui.week = d ? iso(addDays(parseISO(weekKey()), d)) : iso(addDays(weekStartOf(new Date()), 7)); T.drawer = null; },
-    helper: function () { T.helper = !T.helper; },
+    helper: function () { T.helper = !T.helper; T.helperFocus = T.helper; },
+    "helper-go": function () { var el = document.getElementById("helper-in"); helperSend(el ? el.value : chat().draft); return false; },
+    "helper-ex": function (el) { helperSend(el.dataset.t); return false; },
+    "helper-clear": function () { T.chat = null; },
+    "helper-dismiss": function (el) { var m = chat().msgs[+el.dataset.i]; if (m) m.state = "no"; },
+    "helper-apply": function (el) {
+      var m = chat().msgs[+el.dataset.i]; if (!m || m.state !== "open") return false;
+      var n = helperApply(m.actions); m.state = "done";
+      toast(n ? "Done. Changes applied to " + weekLabel(weekKey()) + "." : "Nothing to apply."); },
 
     // onboarding
     "ob-start": function () { S.setup = "wizard"; S.ui.wiz = 0; },
@@ -1920,6 +2077,7 @@
   document.addEventListener("change", function (ev) { var el = ev.target.closest("[data-change]"); if (el) onChange(el); });
   document.addEventListener("input", function (ev) {
     var el = ev.target;
+    if (el.id === "helper-in") { chat().draft = el.value; return; }
     if (el.type === "range" && el.dataset.change === "weight") { var o = el.parentNode.querySelector(".tnum"); if (o) o.textContent = el.value; }
   });
   document.addEventListener("keydown", function (ev) {
@@ -1932,6 +2090,7 @@
       if (fn && fn(ev.target) !== false) render();
     }
   });
+  document.addEventListener("focusin", function (ev) { if (T.helperFocus && ev.target.id !== "helper-in") T.helperFocus = false; });
   window.addEventListener("resize", function () { if (T.pop) { T.pop = null; render(); } });
 
   if (CLOUD) {

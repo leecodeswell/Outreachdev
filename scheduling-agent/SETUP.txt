@@ -31,3 +31,31 @@ Files in this folder
    They sign in with Google or email and land on their own phone view.
 
 Without step 1 the app still works, saving only in your browser like before.
+
+
+TURNING ON THE AI HELPER (optional, needs the backend folder)
+=============================================================
+The helper runs on a small Firebase function so your Anthropic key is never in the browser.
+See scheduling-agent-backend/BACKEND-SETUP.txt (separate folder, not for the website repo).
+Until it is deployed, the Helper button shows "isn't switched on for this workspace yet".
+
+
+PAYWALL: FREE TRIAL, THEN PAID  (new in this version)
+=====================================================
+- Every new business gets a 14-day free trial, then the owner is locked out of EDITING until they pay.
+  Their data stays safe and employees can still see published schedules.
+- Prices and plan names are in config.js (SA_BILLING). Change them any time.
+- You MUST publish the new firestore.rules again (Firestore > Rules > paste > Publish). The lock is enforced there.
+- Your existing test workspace was made before this, so it stays open. To test the paywall, sign up with a
+  different email/Google account.
+
+Unlocking a customer by hand (works with no payment provider at all)
+  Firebase console > Firestore Database > Data > businesses > (the business id) >
+  Add collection "billing" > document id "plan" > fields:
+      paid  (boolean)  true
+      plan  (string)   lifetime      (or "monthly")
+      ai    (boolean)  false
+  The app unlocks within a second. Set paid to false to lock again.
+  Finding the business id: the "users" collection, the document for their sign-in, field "bid".
+
+Automatic unlocking after payment: see scheduling-agent-backend/BACKEND-SETUP.txt (Lemon Squeezy section).

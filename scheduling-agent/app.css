@@ -440,6 +440,20 @@ input[type=range] { accent-color: var(--accent); width: 100%; }
 /* ---------- AI helper ---------- */
 .helper-fab { position: fixed; right: 22px; bottom: 22px; z-index: 30; height: 48px; padding: 0 18px; border-radius: 999px; border: 0; background: var(--text); color: var(--bg); font-weight: 600; display: flex; gap: 8px; align-items: center; box-shadow: var(--shadow-lg); }
 .helper { position: fixed; right: 22px; bottom: 82px; width: 340px; z-index: 31; padding: 16px; display: grid; gap: 10px; }
+.helper { max-height: min(640px, calc(100vh - 110px)); grid-template-rows: auto auto 1fr auto auto; width: 372px; }
+.helper .chat { display: grid; gap: 8px; align-content: start; overflow-y: auto; min-height: 140px; max-height: 380px; padding: 2px 2px 4px; }
+.helper .ex-btn { text-align: left; cursor: pointer; font: inherit; font-size: 13px; }
+.helper .ex-btn:hover { border-color: var(--accent); color: var(--text); }
+.helper .send-row { display: flex; gap: 8px; align-items: center; } .helper .send-row .input { flex: 1; min-width: 0; } .helper .send-row .btn { flex: none; }
+.bub { max-width: 88%; padding: 9px 13px; border-radius: 16px; font-size: 13.5px; line-height: 1.45; overflow-wrap: anywhere; }
+.bub.me { justify-self: end; background: var(--accent); color: var(--on-accent, #fff); border-bottom-right-radius: 5px; }
+.bub.ai { justify-self: start; background: var(--surface-2); border: 1px solid var(--line); border-bottom-left-radius: 5px; }
+.bub.typing { display: flex; gap: 4px; padding: 13px 14px; }
+.bub.typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: blink 1.1s infinite ease-in-out; }
+.bub.typing i:nth-child(2) { animation-delay: .15s; } .bub.typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+.prop { border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; background: var(--surface); display: grid; gap: 6px; font-size: 13px; }
+.prop ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; } .prop li.bad { color: var(--muted); text-decoration: line-through; }
 .helper .ex { padding: 8px 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); font-size: 13px; color: var(--muted); }
 
 /* ---------- responsive ---------- */
@@ -482,3 +496,12 @@ input[type=range] { accent-color: var(--accent); width: 100%; }
   .print-title { display: block !important; font-size: 18px; font-weight: 700; margin-bottom: 10px; }
 }
 .print-title { display: none; }
+
+/* ---------- plans and trial ---------- */
+.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 12px; }
+.plan { border: 1px solid var(--line); border-radius: 16px; padding: 16px; background: var(--surface); display: grid; gap: 6px; align-content: start; }
+.plan .price { font-size: 28px; font-weight: 700; letter-spacing: -.02em; } .plan .price small { font-size: 13px; font-weight: 500; color: var(--muted); }
+.plan p { margin: 0; color: var(--muted); font-size: 13px; }
+.lock-wrap { position: fixed; inset: 0; z-index: 90; background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(6px); display: grid; place-items: center; padding: 16px; overflow: auto; }
+.lock { width: min(560px, 100%); padding: 24px; } .lock h2 { margin: 0 0 6px; } .lock > p { margin: 0 0 4px; color: var(--muted); }
+.plan { min-width: 0; overflow-wrap: anywhere; }
