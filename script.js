@@ -54,6 +54,49 @@
   });
 
   /* =====================================================================
+     PHONES: the mission statement types itself out like code
+     (the tree is hidden at this size; desktop is untouched)
+     ===================================================================== */
+  (function typeMission() {
+    var el = $(".mission-text");
+    if (!el || !window.matchMedia("(max-width: 720px)").matches) return;
+    var text = el.textContent.trim();
+    el.setAttribute("aria-label", text);
+    // every character gets its own span, so the line keeps its final size while it types
+    el.textContent = "";
+    var chars = text.split("").map(function (c) {
+      var s = document.createElement("span"); s.className = "ch"; s.setAttribute("aria-hidden", "true"); s.textContent = c;
+      el.appendChild(s); return s;
+    });
+    var caret = document.createElement("span"); caret.className = "type-caret"; caret.setAttribute("aria-hidden", "true");
+    el.appendChild(caret);
+    if (reduceMotion) return;
+
+    el.classList.add("is-typing");
+    el.insertBefore(caret, chars[0]);
+    var i = 0;
+    function step() {
+      chars[i].classList.add("on");
+      el.insertBefore(caret, chars[i].nextSibling);
+      var c = chars[i].textContent; i++;
+      if (i >= chars.length) { el.classList.remove("is-typing"); return; }
+      // a human-ish rhythm: quick keys, a beat after each word and at punctuation
+      var d = 34 + Math.random() * 38;
+      if (c === " ") d += 40;
+      if (c === "," || c === ".") d += 180;
+      setTimeout(step, d);
+    }
+    var started = false;
+    function begin() { if (!started) { started = true; setTimeout(step, 450); } }
+    if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (es) {
+        if (es[0].isIntersecting) { io.disconnect(); begin(); }
+      }, { threshold: 0.6 });
+      io.observe(el);
+    } else begin();
+  })();
+
+  /* =====================================================================
      HERO TREE: the trunk appears, branches grow out to each leaf,
      small twigs sprout along the way, then gold light runs through it
      ===================================================================== */
@@ -132,7 +175,7 @@
       var grad = ctx.createLinearGradient(p.p0.x, 0, p.p3.x, 0);
       var strong = "rgba(201,162,79,0.6)", soft = "rgba(201,162,79,0.16)";
       grad.addColorStop(0, p.kind === "in" ? soft : strong); grad.addColorStop(1, p.kind === "in" ? strong : soft);
-      ctx.strokeStyle = grad; ctx.lineWidth = 1.25; ctx.lineCap = "round";
+      ctx.strokeStyle = grad; ctx.lineWidth = 1.9; ctx.lineCap = "round";
       ctx.beginPath();
       for (var s = 0; s <= steps; s++) { var pt = bez(p, from + (to - from) * (s / steps)); if (s) ctx.lineTo(pt.x, pt.y); else ctx.moveTo(pt.x, pt.y); }
       ctx.stroke();
@@ -141,7 +184,7 @@
         var k = Math.max(0, Math.min(1, (g - tw.at) / 0.22));
         if (!k) return;
         var e = 1 - Math.pow(1 - k, 2);
-        ctx.strokeStyle = "rgba(201,162,79," + (0.28 * e) + ")"; ctx.lineWidth = 1;
+        ctx.strokeStyle = "rgba(201,162,79," + (0.3 * e) + ")"; ctx.lineWidth = 1.4;
         ctx.beginPath(); ctx.moveTo(tw.s.x, tw.s.y);
         var steps2 = 14;
         for (var q = 1; q <= steps2; q++) {
@@ -149,7 +192,7 @@
           ctx.lineTo(u * u * tw.s.x + 2 * u * t * tw.c.x + t * t * tw.e.x, u * u * tw.s.y + 2 * u * t * tw.c.y + t * t * tw.e.y);
         }
         ctx.stroke();
-        if (k >= 1) { ctx.fillStyle = "rgba(201,162,79,0.55)"; ctx.beginPath(); ctx.arc(tw.e.x, tw.e.y, 1.6, 0, 6.2832); ctx.fill(); }
+        if (k >= 1) { ctx.fillStyle = "rgba(201,162,79,0.55)"; ctx.beginPath(); ctx.arc(tw.e.x, tw.e.y, 2, 0, 6.2832); ctx.fill(); }
       });
       if (g < 1) { var tip = bez(p, p.kind === "in" ? from : to); glow(tip.x, tip.y, 2.2, 0.95); }
     }
