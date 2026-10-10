@@ -1,58 +1,9 @@
-Outreachdev website, version 18
-================================
+Outreachdev website, version 22 (complete)
+==========================================
+Everything in this folder goes in the TOP LEVEL of your repo. Upload it all
+(Add file > Upload files > drag in the CONTENTS of this folder, not the folder itself).
+Uploading replaces files with the same name and never deletes anything.
 
-WHAT'S IN HERE
-  The complete website, including both apps. Everything in this folder goes in
-  the TOP LEVEL of your website repo:
-    index.html, the other .html pages, style.css, script.js, assets/
-    scheduling-agent/   Scheduling Agent      (demo: .../scheduling-agent/?demo)
-    work-orders/        Work Order Manager    (demo: .../work-orders/?demo)
-
-  Not included, and you should keep it: CNAME (it points the repo at
-  outreachdev.dev). Never delete CNAME.
-
-HOW TO UPDATE (GitHub website)
-  1. Unzip this file on your computer.
-  2. In your repo, click "Add file" > "Upload files".
-  3. Open this folder, select EVERYTHING inside it (Ctrl+A), and drag that in.
-     Don't drag the outer outreachdev-site-v18 folder itself, or GitHub will
-     put a copy of the whole site inside a subfolder.
-  4. Commit straight to main. Files with the same name are replaced.
-  5. Delete anything left over that isn't in this folder (except CNAME), such as
-     scheduler.js or an old outreachdev-site-v16 or v17 folder.
-
-  If you prefer to start clean: delete everything except CNAME, then do steps 2-4.
-
-  No Firebase changes. Your rules and backend stay exactly as they are.
-
-ALREADY ON VERSION 17?
-  Only one file that matters changed: scheduling-agent/solver.js (plus its
-  test file, test_solver.js). You can upload just those two into the
-  scheduling-agent folder instead of the whole site.
-
-WHAT CHANGED SINCE VERSION 17
-  Scheduling Agent engine (solver.js, version 2)
-  - Never goes over someone's max hours. If a week can't be fully covered,
-    it leaves the role or spot open and lists it in the notes instead.
-  - Tries 4 to 15 times as many changes in the same 0.7 seconds, and can
-    make two-step fixes (move a manager in, backfill where they were).
-  - Fair-hours targets now add up to the real hours and respect each
-    person's availability.
-  - The full explanation is in the "How the Scheduling Agent engine works" doc.
-
-WHAT CHANGED IN VERSION 17
-  Home page
-  - Top line reads "Custom software · AI chatbots · Apps & websites", with the
-    original intro sentence back.
-  - "Ways to work together" is four even boxes again, each with a // comment line.
-    Small Tool is first, and the Tools section now comes right after the boxes.
-  - Gold is only on the small section labels; big headings are plain again.
-  Scheduling Agent
-  - Shift colors: four colors, two neutrals (gray and sand), and a color wheel
-    for any custom color. Shifts that already use an older color keep it.
-  - The shift side panel no longer replays its slide-in when it opens or while
-    you edit (same fix for the team-member panel and pop-up windows).
-  Both apps
-  - The demo bar hides while a side panel or pop-up is open, so it no longer
-    covers buttons like "Delete shift".
-  - Work Order Manager gets the same smoother side panel.
+This version includes the Stripe sandbox checkout links in both config.js files.
+Your Firebase settings are kept. The backend is separate (scheduling-agent-backend-final.zip)
+and does not go in the repo.

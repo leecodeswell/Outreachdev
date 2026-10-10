@@ -58,7 +58,7 @@ Unlocking a customer by hand (works with no payment provider at all)
   The app unlocks within a second. Set paid to false to lock again.
   Finding the business id: the "users" collection, the document for their sign-in, field "bid".
 
-Automatic unlocking after payment: see scheduling-agent-backend/BACKEND-SETUP.txt (Lemon Squeezy section).
+Automatic unlocking after payment: see scheduling-agent-backend/BACKEND-SETUP.txt (Stripe section).
 
 
 AI HELPER ADD-ON AND FREE COPIES  (new)

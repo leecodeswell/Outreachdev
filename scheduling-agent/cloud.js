@@ -53,7 +53,8 @@
   };
   C.checkoutUrl = function (url) {
     if (!url) return null;
-    var q = "checkout[custom][bid]=" + encodeURIComponent(bid || "") + "&checkout[email]=" + encodeURIComponent((C.user && C.user.email) || "");
+    // Stripe Payment Links: client_reference_id tells the backend which business paid
+    var q = "client_reference_id=" + encodeURIComponent("sa_" + (bid || "")) + "&prefilled_email=" + encodeURIComponent((C.user && C.user.email) || "");
     return url + (url.indexOf("?") < 0 ? "?" : "&") + q;
   };
   function emit() { listeners.forEach(function (fn) { try { fn(); } catch (e) { console.error(e); } }); }

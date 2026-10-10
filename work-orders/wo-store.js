@@ -194,7 +194,8 @@
   };
   St.checkoutUrl = function (url) {
     if (!url) return null;
-    var q = "checkout[custom][bid]=" + encodeURIComponent(St.org || "") + "&checkout[custom][app]=wo&checkout[email]=" + encodeURIComponent((St.user && St.user.email) || "");
+    // Stripe Payment Links: client_reference_id tells the backend which workspace paid
+    var q = "client_reference_id=" + encodeURIComponent("wo_" + (St.org || "")) + "&prefilled_email=" + encodeURIComponent((St.user && St.user.email) || "");
     return url + (url.indexOf("?") < 0 ? "?" : "&") + q;
   };
   // The assistant: free during the trial, then an add-on (or included in a free copy you give someone).
