@@ -1,0 +1,47 @@
+WORK ORDER MANAGER: PUTTING IT ONLINE
+=====================================
+
+Files in this folder
+  index.html, app.css, favicon.svg      the page
+  wo-core.js     the rules of the app (numbers, statuses, roles, import checks)
+  wo-store.js    saving and loading (Firebase online, or this browser only)
+  wo-localdb.js  the "this browser only" storage, used when Firebase isn't set
+  wo-xlsx.js     reads Excel files (no outside service needed)
+  wo-app.js      the screens
+  config.js      your Firebase settings (already filled in) and your prices
+
+It uses the SAME Firebase project as Scheduling Agent. The two apps keep their data
+apart (this one's collections all start with wo_), and one sign-in works for both.
+
+1. Publish the combined security rules (important)
+   Firebase console > Firestore Database > Rules. Delete what's there, paste the whole
+   firestore.rules from the scheduling-agent-backend folder (it covers BOTH apps), Publish.
+   If Publish shows an error, send me a screenshot of it.
+
+2. Optional: file uploads (drawings, photos)
+   Firebase console > Storage > Get started (needs the Blaze plan). Then Storage > Rules,
+   paste storage.rules from the scheduling-agent-backend folder, Publish.
+   Without this, people can still attach files as links (Google Drive, Dropbox, OneDrive).
+
+3. Put the folder online
+   Copy this whole folder into your website repo as "work-orders", commit to main, push.
+   It will be at https://outreachdev.dev/work-orders/
+   (outreachdev.dev is already an authorized domain from Scheduling Agent.)
+
+4. First sign-in
+   Open it, create an account (or use Google), then set up your shop or choose
+   "Look around first" for the fictional sample machine shop.
+
+5. Invite your team
+   Team page > Invite next to a person > send them the link. They open it on their phone.
+   Turn on "Roles and permissions" in Settings so shop staff can only update status,
+   notes and photos.
+
+Demo copy for sales calls
+   Set WO_FIREBASE_CONFIG = null in config.js (in a separate copy) and it runs entirely in
+   the browser with no sign-in: good for showing prospects the sample shop.
+
+Unlocking a customer by hand
+   Firestore > Data > wo_orgs > (their workspace id) > add collection "billing" >
+   document "plan" > fields: paid (boolean) true, plan (string) lifetime.
+   Their workspace id is in wo_users > (their sign-in) > field "org".
