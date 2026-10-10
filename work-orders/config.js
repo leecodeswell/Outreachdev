@@ -14,18 +14,18 @@ window.WO_FIREBASE_CONFIG = {
 };
 
 /* Plans and prices shown in the app. Change them here any time.
-   url: the checkout link from Lemon Squeezy for that product (null until you have it).
+   url: the Payment Link from Stripe for that product (null until you have it).
    If you change trialDays, change the "14" in firestore.rules too. */
 window.WO_BILLING = {
   trialDays: 14,
   contact: "thompsontechnologiesleet@gmail.com",
   plans: [
-    { id: "lifetime", label: "Pay once", price: "$60", per: "one time", note: "Unlimited team members. Updates to version 1 included.", url: null },
-    { id: "monthly", label: "Monthly", price: "$12", per: "per month", note: "Unlimited team members. Cancel any time.", url: null }
+    { id: "lifetime", label: "Pay once", price: "$60", per: "one time", note: "Unlimited team members. Updates to version 1 included.", url: "https://buy.stripe.com/test_eVq6oHdN6bsvdkQ9Ro2wU0d" },
+    { id: "monthly", label: "Monthly", price: "$12", per: "per month", note: "Unlimited team members. Cancel any time.", url: "https://buy.stripe.com/test_cNibJ1cJ21RV0y43t02wU0c" }
   ],
   /* The AI assistant: free during the trial, then this add-on (or included in a free copy you give someone).
-     Put its Lemon Squeezy checkout link in url. */
-  ai: { price: "$8", per: "per month", note: "Ask about your jobs in plain words and approve changes with one tap.", url: null }
+     Put its Stripe Payment Link in url. */
+  ai: { price: "$8", per: "per month", note: "Ask about your jobs in plain words and approve changes with one tap.", url: "https://buy.stripe.com/test_eVqfZh7oIcwzcgMbZw2wU0b" }
 };
 
 /* Demo: opening the app as .../work-orders/?demo runs a copy in that browser tab only
