@@ -20,12 +20,12 @@ window.WO_BILLING = {
   trialDays: 14,
   contact: "thompsontechnologiesleet@gmail.com",
   plans: [
-    { id: "lifetime", label: "Pay once", price: "$60", per: "one time", note: "Unlimited team members. Updates to version 1 included.", url: "https://buy.stripe.com/test_eVq6oHdN6bsvdkQ9Ro2wU0d" },
-    { id: "monthly", label: "Monthly", price: "$12", per: "per month", note: "Unlimited team members. Cancel any time.", url: "https://buy.stripe.com/test_cNibJ1cJ21RV0y43t02wU0c" }
+    { id: "lifetime", label: "Pay once", price: "$60", per: "one time", note: "Unlimited team members. Updates to version 1 included.", url: "https://buy.stripe.com/fZu14ncJ240380we7E2wU05" },
+    { id: "monthly", label: "Monthly", price: "$12", per: "per month", note: "Unlimited team members. Cancel any time.", url: "https://buy.stripe.com/eVq7sL9wQ7cfcgM0gO2wU04" }
   ],
   /* The AI assistant: free during the trial, then this add-on (or included in a free copy you give someone).
      Put its Stripe Payment Link in url. */
-  ai: { price: "$8", per: "per month", note: "Ask about your jobs in plain words and approve changes with one tap.", url: "https://buy.stripe.com/test_eVqfZh7oIcwzcgMbZw2wU0b" }
+  ai: { price: "$8", per: "per month", note: "Ask about your jobs in plain words and approve changes with one tap.", url: "https://buy.stripe.com/00w28rcJ2cwzbcI6Fc2wU03" }
 };
 
 /* Demo: opening the app as .../work-orders/?demo runs a copy in that browser tab only
