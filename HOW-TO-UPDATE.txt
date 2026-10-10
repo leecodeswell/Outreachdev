@@ -1,0 +1,34 @@
+Outreachdev website, version 16
+================================
+
+WHAT'S IN HERE
+  Everything in this folder goes in the TOP LEVEL of your website repo, the same
+  place index.html already is. It includes both apps:
+    scheduling-agent/   Scheduling Agent (adds a demo mode: .../scheduling-agent/?demo)
+    work-orders/        Work Order Manager (adds a demo mode: .../work-orders/?demo)
+
+HOW TO UPDATE (GitHub website)
+  1. Open your repo, click "Add file" > "Upload files".
+  2. Drag in EVERYTHING inside this folder (the files and the folders), not the
+     outer folder itself.
+  3. Commit straight to main. GitHub replaces the old files with these.
+  4. Delete scheduler.js from the repo (open it, click the trash icon, commit).
+     The old demo used it; nothing needs it now.
+
+  No Firebase changes this time. Your rules and backend stay exactly as they are;
+  the demos run entirely in the visitor's browser and never touch your database.
+
+WHAT CHANGED
+  - Home page: new hero animation, Websites & Apps and AI Chatbots sections moved
+    up front, Applications shows the two live apps with demos and free trials,
+    "Under development" is a closed drop-down with three upcoming apps.
+  - New page: work-order-manager.html. scheduling-agent.html is rewritten.
+  - spreadsheet-to-app.html, quote-builder.html and work-instructions.html now just
+    forward visitors to the right place, so old links keep working.
+  - The contact form has an "Interested in" choice, and "Ask about it" buttons
+    fill it in for the visitor.
+
+DEMO MODE
+  Adding ?demo to either app's address opens a copy with sample data, no sign-in.
+  It's saved in that browser tab only and erased when the tab closes, so it can't
+  be used as a free version of the app. A small bar links to the free trial.
