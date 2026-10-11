@@ -229,7 +229,7 @@ a { color: var(--accent); text-decoration: none; }
 .flow-inputs { justify-items: start; }
 .flow-outputs { justify-items: end; }
 /* inputs: lots of small, slightly crooked leaves (the mess); outputs: two big clean birch leaves */
-.flow-inputs { gap: 10px; }
+.flow-inputs { gap: 16px; }
 .flow-inputs .node:nth-of-type(1) { margin-left: 12%; } .flow-inputs .node:nth-of-type(2) { margin-left: 2%; }
 .flow-inputs .node:nth-of-type(3) { margin-left: 20%; } .flow-inputs .node:nth-of-type(4) { margin-left: 7%; }
 .flow-inputs .node:nth-of-type(5) { margin-left: 16%; } .flow-inputs .node:nth-of-type(6) { margin-left: 0; }

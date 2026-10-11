@@ -184,7 +184,7 @@
       }
       var keep = paths; paths = []; pulses = []; sparks = []; ripples = [];
       // the inputs gather onto three limbs (top, middle, bottom) that run into the orb
-      var groups = [[0, 1, 2], [3, 4], [5, 6, 7]], maxTip = 0;
+      var groups = [[0, 1], [2, 3], [4, 5]], maxTip = 0;
       inputs.forEach(function (nd) { var r = nd.querySelector(".stem").getBoundingClientRect(); maxTip = Math.max(maxTip, r.right - base.left); });
       var forkX = maxTip + (HC.x - HC.r - maxTip) * 0.42;
       groups.forEach(function (gr, gi) {
@@ -193,11 +193,11 @@
         var ys = members.map(function (nd) { var r = nd.querySelector(".stem").getBoundingClientRect(); return r.top + r.height / 2 - base.top; });
         var my = ys.reduce(function (a, b) { return a + b; }, 0) / ys.length;
         var fork = { x: forkX + (gi === 1 ? 18 : 0), y: my + (HC.y - my) * 0.35 };
-        var limb = make(null, "in", 300 + gi * 90, null, fork);
+        var limb = make(null, "in", 300, null, fork);
         paths.push(limb);
-        members.forEach(function (nd, k) { var p = make(nd, "in", 300 + GROW_MS * 0.55 + (gi * 3 + k) * 80, fork); p.toLimb = limb; paths.push(p); });
+        members.forEach(function (nd, k) { var p = make(nd, "in", 300, fork); p.toLimb = limb; paths.push(p); });
       });
-      outputs.forEach(function (nd, k) { paths.push(make(nd, "out", 300 + k * 140)); });
+      outputs.forEach(function (nd, k) { paths.push(make(nd, "out", 300)); });
       // motes: faint specks of light drifting up through the tree
       var count = Math.min(70, Math.round(W * H / 15000));
       if (motes.length !== count || !keep.length) {
