@@ -246,11 +246,10 @@
     ];
     var TONES = [
       { base: [104, 78, 32], tip: [232, 196, 116], under: [242, 222, 176] },   // gold
-      { base: [96, 58, 22], tip: [222, 152, 70], under: [238, 200, 152] },     // amber
-      { base: [78, 66, 36], tip: [214, 196, 138], under: [232, 224, 196] },    // champagne
-      { base: [62, 42, 98], tip: [182, 146, 236], under: [218, 202, 244] }     // violet
+      { base: [112, 82, 26], tip: [238, 200, 104], under: [246, 226, 170] },   // bright gold
+      { base: [92, 70, 30], tip: [220, 184, 104], under: [238, 218, 168] }     // soft gold
     ];
-    function pickTone(r) { return r < 0.38 ? 0 : r < 0.68 ? 1 : r < 0.93 ? 2 : 3; }
+    function pickTone(r) { return r < 0.45 ? 0 : r < 0.8 ? 1 : 2; }
     function rgba(c, k, a) { return "rgba(" + (c[0] * k | 0) + "," + (c[1] * k | 0) + "," + (c[2] * k | 0) + "," + a + ")"; }
     function lift(c, k) { return [c[0] + (255 - c[0]) * k, c[1] + (255 - c[1]) * k, c[2] + (255 - c[2]) * k]; }
     function drawLeaf(x, y, ang, len, bright, alpha, kind, tone, flip) {
@@ -360,42 +359,11 @@
     // and four tapered comets orbiting at two radii. Brightens for a moment when a pulse arrives.
     var hubFlash = 0;
     function arcPts(r, a0, a1, n) { var out = []; for (var k = 0; k <= n; k++) { var aa = a0 + (a1 - a0) * k / n; out.push({ x: HC.x + Math.cos(aa) * r, y: HC.y + Math.sin(aa) * r }); } return out; }
-    function drawHub(t, a, dt) {
-      if (a <= 0) return;
-      hubFlash = Math.max(0, hubFlash - (dt || 0) * 1.4);
-      var R0 = HC.r + 9, R1 = HC.r + 20, R2 = HC.r + 36;
-      ctx.lineCap = "round";
-      // guide circles
-      ctx.lineWidth = 1.2;
-      ctx.strokeStyle = "rgba(214,178,100," + (0.08 + 0.1 * hubFlash) * a + ")"; ctx.beginPath(); ctx.arc(HC.x, HC.y, R1, 0, 6.283); ctx.stroke();
-      ctx.strokeStyle = "rgba(214,178,100," + (0.05 + 0.08 * hubFlash) * a + ")"; ctx.beginPath(); ctx.arc(HC.x, HC.y, R2, 0, 6.283); ctx.stroke();
-      // bezel ticks with a sweeping highlight
-      var N = 72, sweep = t * 0.42;
-      for (var i = 0; i < N; i++) {
-        var an = i / N * 6.283, hl = Math.pow(0.5 + 0.5 * Math.cos(an - sweep), 8), major = i % 6 === 0;
-        var len = major ? 5 : 2.6, al = (0.1 + 0.62 * hl + 0.35 * hubFlash) * a;
-        ctx.strokeStyle = "rgba(" + (226 + 29 * hl | 0) + "," + (190 + 44 * hl | 0) + "," + (112 + 80 * hl | 0) + "," + al + ")";
-        ctx.lineWidth = major ? 1.8 : 1.3;
-        ctx.beginPath(); ctx.moveTo(HC.x + Math.cos(an) * R0, HC.y + Math.sin(an) * R0); ctx.lineTo(HC.x + Math.cos(an) * (R0 + len), HC.y + Math.sin(an) * (R0 + len)); ctx.stroke();
-      }
-      // comets
-      ctx.globalCompositeOperation = "lighter";
-      [[R1, 0.34, 1.35, 3.4, 0.95], [R1, -0.23, 0.75, 2.4, 0.6], [R2, 0.15, 1.7, 3.0, 0.7], [R2, -0.19, 0.55, 2.2, 0.5]].forEach(function (o, k) {
-        var head = t * o[1] + k * 1.7, tail = head - o[2] * (o[1] > 0 ? 1 : -1);
-        var pts = arcPts(o[0], tail, head, 36), A = o[4] * a * (1 + 0.4 * hubFlash);
-        var g = ctx.createLinearGradient(pts[0].x, pts[0].y, pts[36].x, pts[36].y);
-        g.addColorStop(0, "rgba(226,190,112,0)"); g.addColorStop(0.65, "rgba(236,204,136," + 0.4 * A + ")"); g.addColorStop(1, "rgba(255,240,205," + Math.min(1, A) + ")");
-        ctx.fillStyle = g; ribbon(pts, 0.2, o[3]);
-        var hp = pts[36];
-        glow(hp.x, hp.y, 16, 0.8 * A);
-        ctx.fillStyle = "rgba(255,250,236," + Math.min(1, A) + ")"; ctx.beginPath(); ctx.arc(hp.x, hp.y, o[3] * 0.55, 0, 6.283); ctx.fill();
-      });
-      ctx.globalCompositeOperation = "source-over";
-    }
+    function drawHub() {}   // the orb is plain CSS now: no rings, ticks or comets
 
     /* ---------- light pulses ---------- */
     function lit(node) { node.classList.add("is-lit"); setTimeout(function () { node.classList.remove("is-lit"); }, 900); }
-    function hubPulse() { hubFlash = 1; ripples.push({ age: 0 }); hub.classList.add("is-pulse"); setTimeout(function () { hub.classList.remove("is-pulse"); }, 520); }
+    function hubPulse() {}
     function spawnIn(p) {
       var ins = paths.filter(function (x) { return x.kind === "in"; });
       p = p || ins[Math.floor(Math.random() * ins.length)];
@@ -508,15 +476,6 @@
           else { lit(q.p.node); var e = q.p.p3; burst(e.x, e.y); }
         }
         if (q.t > 1 + 115 / q.p.len) pulses.splice(i, 1);
-      }
-      for (i = ripples.length - 1; i >= 0; i--) {
-        var r = ripples[i]; r.age += dt; var x = r.age / 1.2;
-        if (x >= 1) { ripples.splice(i, 1); continue; }
-        var rr = HC.r + 4 + ease(x) * 60, ra = Math.pow(1 - x, 2);
-        ctx.strokeStyle = "rgba(226,190,112," + 0.14 * ra + ")"; ctx.lineWidth = 9;
-        ctx.beginPath(); ctx.arc(HC.x, HC.y, rr, 0, 6.283); ctx.stroke();
-        ctx.strokeStyle = "rgba(246,220,160," + 0.6 * ra + ")"; ctx.lineWidth = 2.4;
-        ctx.beginPath(); ctx.arc(HC.x, HC.y, rr, 0, 6.283); ctx.stroke();
       }
       for (i = sparks.length - 1; i >= 0; i--) {
         var s = sparks[i]; s.age += dt; if (s.age > s.life) { sparks.splice(i, 1); continue; }
