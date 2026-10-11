@@ -109,7 +109,7 @@
     var inputs = $$('[data-node="in"]', flow), outputs = $$('[data-node="out"]', flow), hub = $('[data-node="hub"]', flow);
     var labels = $$(".flow-label", flow);
     var paths = [], pulses = [], ripples = [], sparks = [], motes = [], falling = [];
-    var maxReach = 1, W = 0, H = 0, HC = { x: 0, y: 0, r: 1 }, twigLen = 40;
+    var sideEnd = { in: 0, out: 1 }, maxReach = 1, W = 0, H = 0, HC = { x: 0, y: 0, r: 1 }, twigLen = 40;
     var growStart = -1, grown = false, visible = true, seen = false, clock = 0, liveAt = -1, nextFall = 4, spawnClock = 0.4;
     var ptr = { x: -9999, y: -9999, on: false };
     var GROW_MS = 1300, SPEED = 230;   // px per second for the light pulses
@@ -198,6 +198,8 @@
         members.forEach(function (nd, k) { var p = make(nd, "in", 300, fork); p.toLimb = limb; paths.push(p); });
       });
       outputs.forEach(function (nd, k) { paths.push(make(nd, "out", 300)); });
+      sideEnd = { in: W, out: 0 };
+      paths.forEach(function (p) { if (!p.node) return; if (p.kind === "in") sideEnd.in = Math.min(sideEnd.in, p.tip.x); else sideEnd.out = Math.max(sideEnd.out, p.tip.x); });
       maxReach = 0; paths.forEach(function (p) { maxReach = Math.max(maxReach, (p.toLimb ? p.toLimb.len : 0) + p.len); });
       // motes: faint specks of light drifting up through the tree
       var count = Math.min(70, Math.round(W * H / 15000));
@@ -327,15 +329,16 @@
       var from = p.kind === "in" ? 1 - g : 0, to = p.kind === "in" ? 1 : g, N = 40, pts = [];
       // sample from the hub outward so the ribbon is thick at the hub
       for (var i = 0; i <= N; i++) { var tt = p.kind === "in" ? to - (to - from) * i / N : from + (to - from) * i / N; pts.push(bez(p, tt)); }
-      var hubX = p.hubPt.x, leafX = p.p0.x === hubX ? p.p3.x : p.p0.x;
       // soft light under the branch
       ctx.lineCap = "round"; ctx.lineJoin = "round";
       ctx.beginPath(); pts.forEach(function (q, k) { if (k) ctx.lineTo(q.x, q.y); else ctx.moveTo(q.x, q.y); });
-      ctx.strokeStyle = "rgba(201,162,79,0.06)"; ctx.lineWidth = 7; ctx.stroke();
-      var gr = ctx.createLinearGradient(hubX, 0, leafX, 0);
-      gr.addColorStop(0, "rgba(222,186,108,0.92)"); gr.addColorStop(0.55, "rgba(201,162,79,0.55)"); gr.addColorStop(1, "rgba(201,162,79,0.3)");
+      if (p.kind === "out") { ctx.strokeStyle = "rgba(201,162,79,0.06)"; ctx.lineWidth = 7; ctx.stroke(); }   // no halo on the forked side, so nothing marks where a branch splits
+      // one gradient per side, measured from the orb, so a limb and the branches that fork off it shade as one piece
+      var gx0 = HC.x + (p.kind === "in" ? -HC.r : HC.r), gx1 = p.kind === "in" ? sideEnd.in : sideEnd.out;
+      var gr = ctx.createLinearGradient(gx0, 0, gx1, 0);
+      gr.addColorStop(0, "rgb(205,172,100)"); gr.addColorStop(0.55, "rgb(116,95,49)"); gr.addColorStop(1, "rgb(68,56,31)");   // solid, so overlapping branches at a fork don't add up
       ctx.fillStyle = gr;
-      if (p.kind === "out") ribbon(pts, 6, 2 + 3 * (1 - g)); else if (p.isLimb) ribbon(pts, 6, 3.4 + 2 * (1 - g)); else ribbon(pts, 2.4, 0.8 + 1.6 * (1 - g));
+      if (p.kind === "out") ribbon(pts, 6, 2 + 3 * (1 - g)); else if (p.isLimb) ribbon(pts, 6, 3.2 + 2 * (1 - g)); else ribbon(pts, 3.2, 0.8 + 2.4 * (1 - g));
       // twigs and their leaves
       p.twigs.forEach(function (tw) {
         var k = clamp((g - tw.at) / 0.24, 0, 1);
