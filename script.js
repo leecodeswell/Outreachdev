@@ -156,19 +156,22 @@
       twigLen = Math.min(66, W / 23);
       var rand = rng(11);
 
-      function make(node, kind, order) {
-        var sr = node.querySelector(".stem").getBoundingClientRect(), er = node.getBoundingClientRect();
-        var tip = { x: (kind === "in" ? sr.right : sr.left) - base.left, y: sr.top + sr.height / 2 - base.top };
-        var c = { x: er.left - base.left + er.width / 2, y: er.top - base.top + er.height / 2 };
+      function make(node, kind, order, end, limb) {
+        var tip, c;
+        if (node) {
+          var sr = node.querySelector(".stem").getBoundingClientRect(), er = node.getBoundingClientRect();
+          tip = { x: (kind === "in" ? sr.right : sr.left) - base.left, y: sr.top + sr.height / 2 - base.top };
+          c = { x: er.left - base.left + er.width / 2, y: er.top - base.top + er.height / 2 };
+        } else { tip = { x: limb.x, y: limb.y }; c = tip; }   // a limb starts at its fork
         var ang = clamp((tip.y - HC.y) / (HC.r * 4), -0.5, 0.5);
-        var p = { kind: kind, node: node, tip: tip, c: c, phase: rand() * 6.283, delay: 300 + order * 110, twigs: [],
-          hubPt: { x: HC.x + (kind === "in" ? -1 : 1) * HC.r * Math.cos(ang), y: HC.y + HC.r * Math.sin(ang) },
+        var p = { kind: kind, node: node, tip: tip, c: c, phase: rand() * 6.283, delay: order, twigs: [], isLimb: !node, toLimb: null,
+          hubPt: end || { x: HC.x + (kind === "in" ? -1 : 1) * HC.r * Math.cos(ang), y: HC.y + HC.r * Math.sin(ang) },
           s: { dx: 0, dy: 0, rot: 0, ax: 0, ay: 0, bend: 0 }, last: 0 };
         geom(p);
         var len = 0, prev = bez(p, 0);
         for (var k = 1; k <= 24; k++) { var q = bez(p, k / 24); len += Math.hypot(q.x - prev.x, q.y - prev.y); prev = q; }
         p.len = len;
-        var n = kind === "in" ? 1 + (rand() > 0.6 ? 1 : 0) : 5, up = tip.y < HC.y - 8 ? -1 : tip.y > HC.y + 8 ? 1 : 0;
+        var n = !node ? 3 : kind === "in" ? (rand() > 0.5 ? 1 : 0) : 5, up = tip.y < HC.y - 8 ? -1 : tip.y > HC.y + 8 ? 1 : 0;
         for (var i = 0; i < n; i++) {
           var side = up ? (i % 3 === 1 ? -up : up) : (i % 2 ? 1 : -1);
           var tw = { at: 0.16 + (i + 0.2 + rand() * 0.6) * (0.66 / n), side: side, ang: 0.5 + rand() * 0.42, L: twigLen * (0.6 + rand() * 0.75), ph: rand() * 6.283, leaves: [] };
@@ -180,11 +183,21 @@
         return p;
       }
       var keep = paths; paths = []; pulses = []; sparks = []; ripples = [];
-      var n = Math.max(inputs.length, outputs.length), order = 0;
-      for (var i = 0; i < n; i++) {
-        if (inputs[i]) paths.push(make(inputs[i], "in", order++));
-        if (outputs[i]) paths.push(make(outputs[i], "out", order++));
-      }
+      // the inputs gather onto three limbs (top, middle, bottom) that run into the orb
+      var groups = [[0, 1, 2], [3, 4], [5, 6, 7]], maxTip = 0;
+      inputs.forEach(function (nd) { var r = nd.querySelector(".stem").getBoundingClientRect(); maxTip = Math.max(maxTip, r.right - base.left); });
+      var forkX = maxTip + (HC.x - HC.r - maxTip) * 0.42;
+      groups.forEach(function (gr, gi) {
+        var members = gr.map(function (k) { return inputs[k]; }).filter(Boolean);
+        if (!members.length) return;
+        var ys = members.map(function (nd) { var r = nd.querySelector(".stem").getBoundingClientRect(); return r.top + r.height / 2 - base.top; });
+        var my = ys.reduce(function (a, b) { return a + b; }, 0) / ys.length;
+        var fork = { x: forkX + (gi === 1 ? 18 : 0), y: my + (HC.y - my) * 0.35 };
+        var limb = make(null, "in", 300 + gi * 90, null, fork);
+        paths.push(limb);
+        members.forEach(function (nd, k) { var p = make(nd, "in", 300 + GROW_MS * 0.55 + (gi * 3 + k) * 80, fork); p.toLimb = limb; paths.push(p); });
+      });
+      outputs.forEach(function (nd, k) { paths.push(make(nd, "out", 300 + k * 140)); });
       // motes: faint specks of light drifting up through the tree
       var count = Math.min(70, Math.round(W * H / 15000));
       if (motes.length !== count || !keep.length) {
@@ -321,7 +334,7 @@
       var gr = ctx.createLinearGradient(hubX, 0, leafX, 0);
       gr.addColorStop(0, "rgba(222,186,108,0.92)"); gr.addColorStop(0.55, "rgba(201,162,79,0.55)"); gr.addColorStop(1, "rgba(201,162,79,0.3)");
       ctx.fillStyle = gr;
-      if (p.kind === "out") ribbon(pts, 6, 2 + 3 * (1 - g)); else ribbon(pts, 2.6, 0.8 + 2 * (1 - g));
+      if (p.kind === "out") ribbon(pts, 6, 2 + 3 * (1 - g)); else if (p.isLimb) ribbon(pts, 6, 3.4 + 2 * (1 - g)); else ribbon(pts, 2.4, 0.8 + 1.6 * (1 - g));
       // twigs and their leaves
       p.twigs.forEach(function (tw) {
         var k = clamp((g - tw.at) / 0.24, 0, 1);
@@ -365,7 +378,7 @@
     function lit(node) { node.classList.add("is-lit"); setTimeout(function () { node.classList.remove("is-lit"); }, 900); }
     function hubPulse() {}
     function spawnIn(p) {
-      var ins = paths.filter(function (x) { return x.kind === "in"; });
+      var ins = paths.filter(function (x) { return x.kind === "in" && x.node; });
       p = p || ins[Math.floor(Math.random() * ins.length)];
       if (!p) return;
       pulses.push({ p: p, t: 0, wait: 0 }); lit(p.node);
@@ -430,7 +443,7 @@
           geom(p);
           var g = clamp((el - p.delay) / GROW_MS, 0, 1);
           if (g > 0) drawBranch(p, ease(g), t, 0);
-          if (g >= 1 && !p.node.classList.contains("is-born")) {
+          if (g >= 1 && p.node && !p.node.classList.contains("is-born")) {
             p.node.classList.add("is-born"); lit(p.node);
             labels.forEach(function (l) { if (l.parentElement === p.node.parentElement) l.classList.add("is-born"); });
           }
@@ -442,7 +455,7 @@
 
       // breeze, branches, leaves
       paths.forEach(function (p) {
-        sway(p, t, dt, amp); geom(p);
+        if (p.node) sway(p, t, dt, amp); geom(p);
         p.twigs.forEach(function (tw) { tw.leaves.forEach(function (lf) { if (lf.sc < 1) lf.sc = Math.min(1, lf.sc + dt / 1.6); }); });
         drawBranch(p, 1, t, amp);
       });
@@ -472,7 +485,8 @@
         drawPulse(q);
         if (q.t >= 1 && !q.done) {
           q.done = true;
-          if (q.p.kind === "in") { hubPulse(); spawnOut(null, 0.18); }
+          if (q.p.toLimb) pulses.push({ p: q.p.toLimb, t: 0, wait: 0 });   // carry on down the limb
+          else if (q.p.kind === "in") { hubPulse(); spawnOut(null, 0.18); }
           else { lit(q.p.node); var e = q.p.p3; burst(e.x, e.y); }
         }
         if (q.t > 1 + 115 / q.p.len) pulses.splice(i, 1);
@@ -488,7 +502,7 @@
     function bornAll() {
       grown = true; liveAt = clock;
       flow.classList.remove("is-seed"); flow.classList.add("is-grown");
-      paths.forEach(function (p) { p.node.classList.add("is-born"); });
+      paths.forEach(function (p) { if (p.node) p.node.classList.add("is-born"); });
       labels.forEach(function (l) { l.classList.add("is-born"); });
       setTimeout(function () { flow.classList.add("is-live"); }, 520);   // after the pop-in, leaves follow the breeze without easing
     }
