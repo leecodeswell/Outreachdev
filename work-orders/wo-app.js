@@ -265,7 +265,8 @@
     h += '<button class="btn" style="height:44px" data-act="au-google"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="#4285F4" d="M22.6 12.3c0-.8-.1-1.6-.2-2.3H12v4.4h5.9a5 5 0 0 1-2.2 3.3v2.7h3.6c2.1-1.9 3.3-4.8 3.3-8.1z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.7c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.1v2.8A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.8 14.2a6.6 6.6 0 0 1 0-4.3V7.1H2.1a11 11 0 0 0 0 9.9z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.2A11 11 0 0 0 2.1 7.1l3.7 2.8C6.7 7.3 9.1 5.4 12 5.4z"/></svg>Continue with Google</button>' +
       '<div class="row" style="gap:10px;color:var(--faint);font-size:12px"><span style="flex:1;height:1px;background:var(--line)"></span>or with email<span style="flex:1;height:1px;background:var(--line)"></span></div>' +
       '<label class="field"><span>Email</span><input class="input" id="au-email" type="email" autocomplete="email" value="' + esc(U.authEmail || "") + '"></label>' +
-      (U.authLink ? "" : '<label class="field"><span>Password</span><input class="input" id="au-pw" type="password" autocomplete="' + (up ? "new-password" : "current-password") + '" data-enter="au-email-go"></label>') + "</div>";
+      (U.authLink ? "" : '<label class="field"><span>Password</span><input class="input" id="au-pw" type="password" autocomplete="' + (up ? "new-password" : "current-password") + '" value="' + esc(U.authPw || "") + '" data-enter="au-email-go"></label>') +
+      (up ? '<p class="faint" style="font-size:12px;margin:0">By creating an account you agree to the <a href="../terms.html" target="_blank" rel="noopener">Terms</a> and <a href="../privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>' : "") + "</div>";
     h += '<div class="ob-foot">' + (U.authLink ? '<button class="btn btn-ghost btn-sm" data-act="au-mode" data-v="pw">Use a password instead</button>'
       : '<button class="btn btn-ghost btn-sm" data-act="au-mode" data-v="' + (up ? "in" : "up") + '">' + (up ? "I have an account" : "Create an account") + '</button><button class="btn btn-ghost btn-sm" data-act="au-mode" data-v="link">Email me a link</button>') +
       '<span class="spacer"></span><button class="btn btn-primary" data-act="au-email-go">' + (U.authLink ? "Send link" : up ? "Create account" : "Sign in") + "</button></div></div></div>";
@@ -289,7 +290,7 @@
       return h + '<div class="ob-head">' + brandHTML + "<h1>Replace the work order spreadsheet</h1><p>Every job gets a number that never repeats, a status everyone can see, and a history of who changed what. Setup takes about three minutes, and you can bring in your spreadsheet at the end.</p></div>" +
         '<div class="ob-body"><div class="choice-grid">' +
         '<button class="choice" data-act="wiz-next"><span class="ico">' + icon("wrench") + "</span><b>Set up my shop</b><span>Answer a few questions. Each yes turns on a feature you need.</span></button>" +
-        '<button class="choice" data-act="wiz-sample"><span class="ico">' + icon("eye") + "</span><b>Look around first</b><span>Open a fictional machine shop with 160 sample work orders.</span></button></div>" +
+        (St.mode === "local" ? '<button class="choice" data-act="wiz-sample"><span class="ico">' + icon("eye") + "</span><b>Look around first</b><span>Open a fictional machine shop with 160 sample work orders.</span></button>" : "") + "</div>" +
         (St.mode === "local" ? '<div class="note">' + icon("info") + "<span>" + (window.WO_DEMO ? "This is a demo. Pick <b>Look around first</b> for a sample shop, or set up your own. It all stays in this tab and is erased when you close it." : "This copy saves only in this browser. Once it's connected online, your team can sign in from any phone or computer.") + "</span></div>" : '<div class="note">' + icon("sparkle") + "<span>Free for " + St.trialDays + " days. No card needed. Unlimited team members.</span></div>") +
         (St.error ? '<div class="note note-warn">' + icon("alert") + "<span>" + esc(St.error) + "</span></div>" : "") +
         "</div><div class=\"ob-foot\">" + (St.mode !== "local" ? '<span class="faint" style="font-size:12.5px">Signed in as ' + esc((St.user && St.user.email) || "") + '</span><button class="btn btn-ghost btn-sm" data-act="sign-out">Not you?</button>' : "") + "</div></div></div>";
@@ -297,7 +298,11 @@
     h += '<div class="steps" style="margin-top:22px">' + WIZ_STEPS.map(function (x, i) { return '<span class="' + (i < step ? "on" : "") + '"></span>'; }).join("") + "</div>";
     h += '<div class="step-label">Step ' + step + " of " + WIZ_STEPS.length + " · " + WIZ_STEPS[step - 1] + "</div>";
     if (step === 1) {
+      var bm = (s.brand && s.brand.mode) || "light";
       h += '<div class="ob-head" style="padding-top:8px"><h1>Tell us about your shop</h1><p>This picks sensible statuses and words. You can change everything later.</p></div><div class="ob-body">' +
+        '<div class="field"><span>Light or dark?</span><div class="mode-pick">' + [["light", "Light"], ["dark", "Dark"], ["system", "Match my device"]].map(function (m) {
+          return '<button class="mode-card' + (bm === m[0] ? " on" : "") + '" data-act="wz-mode" data-v="' + m[0] + '" aria-pressed="' + (bm === m[0]) + '"><span class="mode-prev mode-' + m[0] + '"><i></i><i></i><i></i></span><b>' + m[1] + "</b></button>";
+        }).join("") + "</div></div>" +
         '<label class="field"><span>Shop name</span><input class="input" data-change="wz-name" value="' + esc(s.business.name) + '" placeholder="e.g. Ridgeline Precision"></label>' +
         '<div class="field"><span>Your name</span><input class="input" data-change="wz-owner" value="' + esc(z.ownerName) + '" placeholder="Shown in the history"></div>' +
         '<div class="field"><span>What kind of shop?</span><div class="choice-grid">' + Object.keys(W.PRESETS).map(function (k) {
@@ -329,7 +334,7 @@
         (rolesOn ? "" : '<div class="note">' + icon("info") + "<span>Roles are off, so everyone you add can create and edit work orders. Turn on roles in Settings to limit shop staff to status updates.</span></div>") + "</div>";
     } else if (step === 6) {
       h += '<div class="ob-head" style="padding-top:8px"><h1>How do you want to start?</h1><p>You can always import later from the Import page.</p></div><div class="ob-body"><div class="choice-grid">' +
-        [["import", "table", "Bring in my spreadsheet", "Upload an Excel or CSV file. You'll match your columns, then see a report of what came in."], ["empty", "plus", "Start empty", "Create work orders as they come in."], ["sample", "eye", "Fill with sample data", "A fictional machine shop's orders, to try things out. Not for real use."]].map(function (o) {
+        [["import", "table", "Bring in my spreadsheet", "Upload an Excel or CSV file. You'll match your columns, then see a report of what came in."], ["empty", "plus", "Start empty", "Create work orders as they come in."]].concat(St.mode === "local" ? [["sample", "eye", "Fill with sample data", "A fictional machine shop's orders, to try things out. Not for real use."]] : []).map(function (o) {
           return '<button class="choice' + (z.start === o[0] ? " on" : "") + '" data-act="wz-start" data-v="' + o[0] + '"><span class="ico">' + icon(o[1]) + "</span><b>" + o[2] + "</b><span>" + o[3] + "</span></button>";
         }).join("") + "</div>" + (St.error ? '<div class="note note-warn">' + icon("alert") + "<span>" + esc(St.error) + "</span></div>" : "") + "</div>";
     }
@@ -398,7 +403,7 @@
     var late = open.filter(function (o) { return W.isOverdue(o, s, t); }), soon = open.filter(function (o) { return W.isDueSoon(o, s, t); }), hold = open.filter(function (o) { return W.catOf(s, o.status) === "hold"; });
     var weekAgo = Date.now() - 7 * 864e5, closedWeek = list.filter(function (o) { return W.catOf(s, o.status) === "done" && (o.closedAt || 0) >= weekAgo; }).length;
     var h = '<div class="page-head"><div class="page-title"><h1>' + esc(s.business.name || "Dashboard") + "</h1><p>" + fmtDate(t, true) + " · " + plural(closedWeek, "job") + " finished in the last 7 days</p></div>" +
-      (list.some(function (o) { return o.source === "sample"; }) ? '<span class="tag-sample">Sample data</span>' : "") + "</div>";
+      (list.some(function (o) { return o.source === "sample"; }) ? '<span class="row" style="gap:8px"><span class="tag-sample">Sample data</span>' + (W.canAdmin(role()) ? '<button class="btn btn-sm" data-act="sample-remove">' + icon("trash") + "Remove sample data</button>" : "") + "</span>" : "") + "</div>";
     if (!list.length) {
       return h + '<div class="card empty"><span class="ico">' + icon("list") + "</span><h3>No " + esc(lnoun()) + "s yet</h3><p>Create your first one, or bring in your spreadsheet.</p><div class=\"row\">" +
         (W.canEdit(role()) ? '<button class="btn btn-primary" data-act="new-order">' + icon("plus") + "New " + esc(lnoun()) + "</button>" : "") +
@@ -472,10 +477,12 @@
     }
     return null;
   }
+  // lower case without accents, so "cafe" finds "Café"
+  function fold(s) { s = String(s == null ? "" : s).toLowerCase(); try { return s.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); } catch (e) { return s; } }
   function matches(o, q) {
     if (!q) return true;
-    var hay = [o.number, o.customer, o.po, o.part, o.rev, o.title, o.notes, pname(o.assignee), stInfo(o.status).name, o.holdReason].concat(Object.keys(o.custom || {}).map(function (k) { return o.custom[k]; })).concat((o.items || []).map(function (it) { return it.part; })).join(" ").toLowerCase();
-    return q.toLowerCase().split(/\s+/).filter(Boolean).every(function (w) { return hay.indexOf(w) >= 0; });
+    var hay = fold([o.number, o.customer, o.po, o.part, o.rev, o.title, o.notes, pname(o.assignee), stInfo(o.status).name, o.holdReason].concat(Object.keys(o.custom || {}).map(function (k) { return o.custom[k]; })).concat((o.items || []).map(function (it) { return it.part; })).join(" "));
+    return fold(q).split(/\s+/).filter(Boolean).every(function (w) { return hay.indexOf(w) >= 0; });
   }
   function filtered() {
     var s = S(), t = today(), f = U.f;
@@ -532,6 +539,7 @@
       h += '<div class="bulk"><b>' + nSel + " selected</b>" + sel('data-change="bulk-status" aria-label="Move to status"', [["", "Move to…"]].concat(statusOpts()), "", { sm: true }) +
         sel('data-change="bulk-assign" aria-label="Assign to"', [["", "Assign to…"], ["__none", "Unassigned"]].concat(peopleOpts().slice(1)), "", { sm: true }) +
         '<button class="btn btn-sm" data-act="export-sel">' + icon("download") + "Export</button>" + (S().features.travelers ? '<button class="btn btn-sm" data-act="print-sel">' + icon("printer") + "Print travelers</button>" : "") +
+        (W.canAdmin(role()) ? '<button class="btn btn-sm" style="color:var(--bad)" data-act="sel-del">' + icon("trash") + "Delete</button>" : "") +
         '<span class="spacer" style="flex:1"></span><button class="btn btn-sm" data-act="sel-none">Clear</button></div>';
     }
     return h;
@@ -647,7 +655,8 @@
       if (s.features.reasons && ch.some(function (c) { return c[0] === "due"; })) {
         h += '<div class="reason-box' + (dr.errors.reason ? " err" : "") + '"><b>' + icon("clock") + " Why did the due date change?</b><input class=\"input\" id=\"reason\" placeholder=\"e.g. Customer moved the ship date\" value=\"" + esc(dr.reason) + '">' + (dr.errors.reason ? '<span class="msg" style="color:var(--bad);font-size:12px;font-weight:600">' + esc(dr.errors.reason) + "</span>" : "") + "</div>";
       }
-      h += '<div class="faint" style="font-size:12px">Created ' + fullTime(o.createdAt) + (o.createdByName ? " by " + esc(o.createdByName) : "") + (o.source === "import" ? " (imported)" : "") + (o.closedAt ? " · Closed " + fullTime(o.closedAt) : "") + "</div>";
+      h += '<div class="faint" style="font-size:12px">Created ' + fullTime(o.createdAt) + (o.createdByName ? " by " + esc(o.createdByName) : "") + (o.source === "import" ? " (imported)" : "") + (o.closedAt ? " · Closed " + fullTime(o.closedAt) : "") + "</div>" +
+        (W.canAdmin(r) ? '<div style="margin-top:14px"><button class="btn btn-sm btn-ghost" style="color:var(--bad)" data-act="order-del">' + icon("trash") + "Delete this " + esc(lnoun()) + "</button></div>" : "");
     } else if (dr.tab === "files") h += renderFiles(o, r);
     else h += renderHistory(dr.history, r, o);
     h += "</div>";
@@ -909,6 +918,7 @@
     }).join("") + "</tbody></table></div></div>";
     if (missing.length) h += '<div class="note note-warn" style="margin-top:12px">' + icon("alert") + "<span>No column is matched to <b>" + missing.map(function (k) { return W.FIELD_LABEL[k]; }).join("</b> or <b>") + "</b>. Rows without them can't be imported.</span></div>";
     if (!used.number) h += '<div class="note" style="margin-top:12px">' + icon("info") + "<span>No work order # column, so every row gets a new number (" + esc(nextNumberGuess()) + " onward).</span></div>";
+    if (!used.status) h += '<div class="note" style="margin-top:12px">' + icon("info") + "<span>No status column, so every row starts as <b>" + esc(stInfo(W.firstStatus(S())).name) + "</b>. If one of your columns holds the status, pick <b>Status</b> for it above.</span></div>";
     else h += '<div class="note" style="margin-top:12px">' + icon("check") + "<span>Your existing work order numbers will be kept exactly as they are. New orders continue after the highest one.</span></div>";
     var dupAny = Object.keys(used).some(function (k) { return used[k] > 1; });
     return h + '<div class="row" style="margin-top:16px"><span class="spacer" style="flex:1"></span><button class="btn btn-primary" data-act="imp-to-values"' + (dupAny ? " disabled" : "") + ">Continue" + icon("right") + "</button></div>";
@@ -1123,7 +1133,7 @@
      It runs on a Firebase function (the key never reaches the browser).
      Changes are only proposed; the owner presses Apply.
      ------------------------------------------------------------------ */
-  var HELPER_EX = ["Which jobs are late?", "What's due this week?", "Make the late jobs high priority.", "What is on hold, and why?"];
+  var HELPER_EX = ["Which jobs are late?", "Make the late jobs high priority.", "New job for Acme: 50 brackets, due in 2 weeks.", "Add Sam Patel to the team in Welding."];
   function chat() { return U.chat || (U.chat = { msgs: [], busy: false, draft: "", error: "", addon: false }); }
   function aiCfg() { return (window.WO_BILLING || {}).ai || {}; }
   function helperAllowed() { return St.status === "member" && !U.preview && W.canAdmin(St.myRole()); }
@@ -1131,23 +1141,45 @@
   function needsAddon() { return chat().addon || St.aiAccess().state === "needs-addon"; }
 
   function helperContext() {
-    var s = S(), t = today(), all = allOrders();
+    var s = S(), t = today(), all = allOrders(), fieldsOn = s.features.fields && (s.fields || []).length ? s.fields : null;
     var open = all.filter(function (o) { return !W.isClosed(o, s); }).sort(function (a, b) { return (a.due || "").localeCompare(b.due || "") || natCmp(a.number, b.number); });
-    var closed = all.filter(function (o) { return W.isClosed(o, s); }).sort(function (a, b) { return (b.closedAt || 0) - (a.closedAt || 0); }).slice(0, 20);
+    var closed = all.filter(function (o) { return W.isClosed(o, s); }).sort(function (a, b) { return (b.closedAt || b.updatedAt || 0) - (a.closedAt || a.updatedAt || 0); }).slice(0, 40);
     var rows = open.slice(0, 150).concat(closed).map(function (o) {
-      return { number: o.number, customer: o.customer, po: o.po || "", part: o.part || "", qty: o.qty === "" ? null : o.qty, title: String(o.title || "").slice(0, 80), due: o.due, received: o.received || "", status: o.status, priority: o.priority || "normal", assignee: o.assignee || "", hold: o.holdReason || "" };
+      var r = { number: o.number, customer: o.customer, po: o.po || "", part: o.part || "", qty: o.qty === "" ? null : o.qty, title: String(o.title || "").slice(0, 80), due: o.due, received: o.received || "", status: o.status, priority: o.priority || "normal", assignee: o.assignee || "", hold: o.holdReason || "", notes: String(o.notes || "").slice(0, 120) };
+      if (fieldsOn && o.custom) { var ex = {}; fieldsOn.forEach(function (f) { if (o.custom[f.id]) ex[f.id] = String(o.custom[f.id]).slice(0, 60); }); if (Object.keys(ex).length) r.extra = ex; }
+      return r;
     });
     return {
       today: t, dueSoonDays: s.business.dueSoonDays || 3, noun: lnoun(),
       statuses: (s.statuses || []).map(function (x) { return { id: x.id, name: x.name, kind: x.cat }; }),
-      people: Object.keys(St.data.people).map(function (k) { return { id: k, name: St.data.people[k].name }; }),
-      orders: rows, truncated: open.length > 150
+      people: Object.keys(St.data.people).map(function (k) { var p = St.data.people[k]; return { id: k, name: p.name, role: p.role || "staff", dept: p.dept || "" }; }),
+      customers: Object.keys(St.data.customers).map(function (k) { var c = St.data.customers[k]; return { id: k, name: c.name, contact: c.contact || "", phone: c.phone || "", email: c.email || "" }; }).filter(function (c) { return c.name; }).slice(0, 300),
+      fields: fieldsOn ? fieldsOn.map(function (f) { return { id: f.id, label: f.label, type: f.type || "text", options: f.options || undefined }; }) : [],
+      orders: rows, truncated: open.length > 150 || all.length - open.length > 40
     };
   }
 
+  var EDIT_LABEL = { customer: "customer", po: "PO", part: "part", rev: "rev", qty: "qty", title: "description", notes: "instructions", received: "received date" };
   function helperDescribe(a) {
-    var o = ord(a.order), s = S();
+    var s = S();
+    if (a.type === "create_order") {
+      var f = a.fields || {};
+      return { ok: true, t: "New " + lnoun() + " for " + f.customer + (f.part ? ": " + (f.qty ? f.qty + " × " : "") + f.part : f.title ? ": " + f.title : "") + ", due " + fmtDate(a.due) + (a.priority && a.priority !== "normal" ? " (" + a.priority + ")" : "") + (a.person ? ", assigned to " + (pname(a.person) || "someone") : "") };
+    }
+    var INFO = function (f) { return Object.keys(f || {}).map(function (k) { return k + " \u201c" + String(f[k]).slice(0, 40) + "\u201d"; }).join(", "); };
+    if (a.type === "add_customer") { var rest = Object.assign({}, a.info); delete rest.name; return { ok: true, t: "Add customer " + a.info.name + (Object.keys(rest).length ? " (" + INFO(rest) + ")" : "") }; }
+    if (a.type === "update_customer") { var c = St.data.customers[a.customer]; return c ? { ok: true, t: "Customer " + c.name + ": " + INFO(a.info) } : { ok: false, t: "A customer that isn't here anymore" }; }
+    if (a.type === "add_person") return { ok: W.canAdmin(role()), t: "Add " + a.name + " to the team as " + a.role + (a.dept ? " (" + a.dept + ")" : "") };
+    if (a.type === "update_person") { var pp = St.data.people[a.person]; return pp ? { ok: W.canAdmin(role()), t: pp.name + ": " + [a.name ? "rename to " + a.name : "", a.dept != null ? "department \u201c" + a.dept + "\u201d" : ""].filter(Boolean).join(", ") } : { ok: false, t: "Someone who isn't on the team" }; }
+    var o = ord(a.order);
     if (!o) return { ok: false, t: a.order + " isn't here anymore" };
+    if (a.type === "set_field") { var fd = (s.fields || []).find(function (f) { return f.id === a.field; }); return fd ? { ok: String((o.custom || {})[a.field] || "") !== a.value, skip: String((o.custom || {})[a.field] || "") === a.value, t: a.order + ": " + fd.label + " \u201c" + a.value + "\u201d" } : { ok: false, t: "An extra field that isn't set up" }; }
+    if (a.type === "delete_order") return { ok: W.canAdmin(role()), del: true, t: "Delete " + a.order + " (" + o.customer + ") for good" };
+    if (a.type === "update_fields") {
+      var ch = Object.keys(a.fields || {}).filter(function (k) { return String(o[k] == null ? "" : o[k]) !== String(a.fields[k]); });
+      if (!ch.length) return { ok: false, skip: true, t: a.order + ": no change" };
+      return { ok: true, t: a.order + ": " + ch.map(function (k) { return "set " + EDIT_LABEL[k] + " to \u201c" + String(k === "received" ? fmtDate(a.fields[k]) : a.fields[k]).slice(0, 60) + "\u201d"; }).join(", ") };
+    }
     if (a.type === "set_status") {
       var info = W.nextStatuses(s, o.status, role()).find(function (x) { return x.id === a.status; });
       if (!info) return { ok: false, t: a.order + " is already " + stInfo(a.status).name };
@@ -1163,14 +1195,27 @@
 
   // Apply the approved changes. Changes to the same work order go in together as one history entry.
   function helperApply(actions) {
-    var s = S(), by = {}, order = [], notes = [], problems = 0, done = 0;
+    var s = S(), by = {}, order = [], notes = [], creates = [], dels = [], side = [], problems = 0, done = 0;
     actions.forEach(function (a) {
       var d = helperDescribe(a); if (!d.ok) { if (!d.skip) problems++; return; }
       if (a.type === "add_note") { notes.push(a); return; }
+      if (a.type === "create_order") { creates.push(a); return; }
+      if (a.type === "add_customer" || a.type === "update_customer" || a.type === "add_person" || a.type === "update_person") { side.push(a); return; }
+      if (a.type === "delete_order") { dels.push(a.order); return; }
       if (!by[a.order]) { by[a.order] = []; order.push(a.order); }
       by[a.order].push(a);
     });
     var chain = Promise.resolve();
+    side.forEach(function (a) {
+      chain = chain.then(function () {
+        var job;
+        if (a.type === "add_customer") job = St.saveCustomer(a.info);
+        else if (a.type === "update_customer") { var c = St.data.customers[a.customer]; job = St.saveCustomer(Object.assign({ id: a.customer }, { name: c.name, contact: c.contact || "", phone: c.phone || "", email: c.email || "", notes: c.notes || "" }, a.info)); }
+        else if (a.type === "add_person") job = St.savePerson({ name: a.name, role: a.role, dept: a.dept || "" });
+        else { var p = St.data.people[a.person]; job = St.savePerson({ id: a.person, name: a.name || p.name, role: p.role || "staff", dept: a.dept != null ? a.dept : (p.dept || "") }); } // role is never changed here
+        return job.then(function () { done++; }).catch(function () { problems++; });
+      });
+    });
     order.forEach(function (num) {
       chain = chain.then(function () {
         var o = ord(num); if (!o) { problems++; return; }
@@ -1180,12 +1225,29 @@
           else if (a.type === "set_priority") next.priority = a.priority;
           else if (a.type === "assign") next.assignee = a.person === "none" ? "" : a.person;
           else if (a.type === "set_due") { next.due = a.due; reason = a.reason || "Changed with the assistant"; }
+          else if (a.type === "update_fields") Object.keys(a.fields || {}).forEach(function (k) { next[k] = a.fields[k]; });
+          else if (a.type === "set_field") { next.custom = Object.assign({}, next.custom || {}); next.custom[a.field] = a.value; }
         });
+        if (s.features.items && by[num].some(function (a) { return a.type === "update_fields" && a.fields && (a.fields.part != null || a.fields.qty != null || a.fields.rev != null); })) {
+          var it = (next.items && next.items.length ? clone(next.items) : [{ part: o.part || "", rev: o.rev || "", qty: o.qty || "" }]);
+          if (it.length === 1) { it[0].part = next.part || ""; it[0].rev = next.rev || ""; it[0].qty = next.qty || ""; next.items = it; }
+        }
         if (Object.keys(W.validate(next, s)).length) { problems++; return; }
         return St.updateOrder(num, o, next, { reason: reason, note: "Approved from the assistant" }).then(function () { done++; }).catch(function () { problems++; });
       });
     });
+    creates.forEach(function (a) {
+      chain = chain.then(function () {
+        var f = a.fields || {}, d = { customer: f.customer || "", po: f.po || "", part: f.part || "", rev: f.rev || "", qty: f.qty || "", title: f.title || "", notes: f.notes || "",
+          received: f.received || today(), due: a.due, assignee: a.person || "", priority: a.priority || "normal", status: a.status && W.statusById(s, a.status) ? a.status : W.firstStatus(s), holdReason: "", custom: {} };
+        if (W.catOf(s, d.status) === "hold") d.holdReason = "Set by the assistant";
+        if (s.features.items) d.items = [{ part: d.part, rev: d.rev, qty: d.qty }];
+        if (Object.keys(W.validate(d, s)).length) { problems++; return; }
+        return St.createOrder(d).then(function () { done++; }).catch(function () { problems++; });
+      });
+    });
     notes.forEach(function (a) { chain = chain.then(function () { return St.addNote(a.order, a.text).then(function () { done++; }).catch(function () { problems++; }); }); });
+    if (dels.length) chain = chain.then(function () { return St.deleteOrders(dels).then(function (n) { done += n; if (U.drawer && dels.indexOf(U.drawer.number) >= 0) closeDrawer(); }).catch(function () { problems += dels.length; }); });
     return chain.then(function () { return { done: done, problems: problems }; });
   }
 
@@ -1231,7 +1293,7 @@
       if (m.actions) {
         var d = m.actions.map(helperDescribe), okN = d.filter(function (x) { return x.ok; }).length; if (okN) d = d.filter(function (x) { return x.ok; });
         h += '<div class="prop"><b>' + (m.state === "done" ? "Applied" : m.state === "no" ? "Dismissed" : "Proposed changes") + "</b><ul>" +
-          d.map(function (x) { return "<li" + (x.ok ? "" : ' class="bad"') + ">" + esc(x.t) + "</li>"; }).join("") + "</ul>" +
+          d.map(function (x) { return "<li" + (x.ok ? (x.del ? ' style="color:var(--bad)"' : "") : ' class="bad"') + ">" + esc(x.t) + "</li>"; }).join("") + "</ul>" +
           (m.state === "open" ? '<div class="row"><button class="btn btn-sm btn-primary" data-act="helper-apply" data-i="' + i + '"' + (okN ? "" : " disabled") + ">" + icon("check") + 'Apply</button><button class="btn btn-sm" data-act="helper-dismiss" data-i="' + i + '">Not now</button></div>' : "") + "</div>";
       }
     });
@@ -1415,7 +1477,7 @@
 
     // auth
     "au-google": function () { St.signInGoogle().then(render); return false; },
-    "au-mode": function (el) { var v = el.dataset.v; U.authEmail = ($("#au-email") || {}).value || U.authEmail; U.authLink = v === "link"; if (v === "up") U.authMode = "signup"; if (v === "in") U.authMode = "signin"; St.error = null; },
+    "au-mode": function (el) { var v = el.dataset.v; U.authEmail = ($("#au-email") || {}).value || U.authEmail; U.authPw = ($("#au-pw") || {}).value || U.authPw; U.authLink = v === "link"; if (v === "up") U.authMode = "signup"; if (v === "in") U.authMode = "signin"; St.error = null; },
     "au-email-go": function () {
       var em = (($("#au-email") || {}).value || "").trim(), pw = ($("#au-pw") || {}).value || ""; U.authEmail = em;
       if (!em) { St.error = "Enter your email."; render(); return false; }
@@ -1429,6 +1491,7 @@
     "wiz-next": function () { var z = wiz(); if (z.step === 3 && !["open", "done"].every(function (c) { return z.settings.statuses.some(function (x) { return x.cat === c; }); })) { toast('Keep at least one "Not started" and one "Done" status.'); return false; } if (z.step === 4 && W.numberProblem(W.previewNumber(z.settings.numbering))) { toast("The number format can't contain / \\ # ? [ ]"); return false; } z.step = Math.min(6, z.step + 1); St.error = null; },
     "wiz-back": function () { var z = wiz(); z.step = Math.max(0, z.step - 1); },
     "wiz-sample": function () { var z = wiz(); z.busy = true; St.createOrg({ settings: z.settings, sample: true, ownerName: z.ownerName }).then(function () { U.wiz = null; U.view = "dashboard"; toast("Sample shop ready. Everything here is fictional."); render(); }).catch(function () { z.busy = false; render(); }); return false; },
+    "wz-mode": function (el) { var z = wiz(); z.settings.brand = z.settings.brand || {}; z.settings.brand.mode = el.dataset.v; },
     "wz-ind": function (el) {
       var z = wiz(), s = z.settings, k = el.dataset.v, name = s.business.name, feats = s.features, brandS = s.brand, num = s.numbering;
       var ns = W.defaultSettings(k); ns.business.name = name; ns.features = feats; ns.brand = brandS; ns.numbering = num;
@@ -1437,7 +1500,7 @@
     },
     "wz-yn": function (el) { var z = wiz(), on = el.dataset.v === "1"; z.answers[el.dataset.k] = on; z.settings.features[el.dataset.k] = on; },
     "wz-all": function (el) { var z = wiz(); W.OPT.forEach(function (k) { z.answers[k] = el.dataset.v === "yes"; z.settings.features[k] = z.answers[k]; }); },
-    "wz-add-person": function () { var el = $("#wz-person"), n = el && el.value.trim(); if (!n) return false; wiz().people.push({ name: n, role: ($("#wz-role") || {}).value || "staff" }); U.focus = "#wz-person"; },
+    "wz-add-person": function () { var el = $("#wz-person"), n = el && el.value.trim(); if (!n) return false; if (wiz().people.some(function (p) { return p.name.toLowerCase() === n.toLowerCase(); })) { toast(n + " is already on the list."); return false; } wiz().people.push({ name: n, role: ($("#wz-role") || {}).value || "staff" }); U.focus = "#wz-person"; },
     "wz-del-person": function (el) { wiz().people.splice(+el.dataset.i, 1); },
     "wz-start": function (el) { wiz().start = el.dataset.v; },
     "wiz-finish": function () {
@@ -1470,6 +1533,25 @@
     cols: function (el) { openPop(el, { type: "cols" }); },
     "cols-reset": function () { U.cols = DEFAULT_COLS.slice(); remember(); },
     "sel-none": function () { U.sel = {}; },
+    "sel-del": function () {
+      var nums = Object.keys(U.sel).filter(function (k) { return U.sel[k] && ord(k); });
+      if (!nums.length) return false;
+      ask("Delete " + plural(nums.length, lnoun()) + " for good? " + (nums.length <= 5 ? nums.join(", ") + ". " : "") + "This can't be undone. Numbers aren't reused. To keep a record instead, move them to a closed or canceled status.", "Delete " + plural(nums.length, lnoun()), function () {
+        St.deleteOrders(nums).then(function (n) { U.sel = {}; toast("Deleted " + plural(n, lnoun()) + "."); render(); }).catch(function (e) { toast(errMsg(e)); });
+      }, true);
+    },
+    "order-del": function () {
+      var n = U.drawer && U.drawer.number; if (!n) return false;
+      ask("Delete " + n + " for good? Its details and history will be gone, and the number won't be reused. To keep a record instead, move it to a closed or canceled status.", "Delete " + n, function () {
+        St.deleteOrders([n]).then(function () { closeDrawer(); toast(n + " deleted."); render(); }).catch(function (e) { toast(errMsg(e)); });
+      }, true);
+    },
+    "sample-remove": function () {
+      ask("Remove the sample shop? This deletes its " + plural(St.sampleCount(), "sample " + lnoun()) + " and the fictional customers and team members. Anything you added yourself stays. Your settings stay too.", "Remove sample data", function () {
+        toast("Removing sample data…");
+        St.removeSample().then(function (n) { toast("Removed " + plural(n, "sample " + lnoun()) + "."); render(); }).catch(function (e) { toast(errMsg(e)); });
+      }, true);
+    },
     "export-csv": function () { download(lnoun().replace(/\s+/g, "-") + "s-" + today() + ".csv", ordersCSV(filtered()), "text/csv"); return false; },
     "export-sel": function () { download(lnoun().replace(/\s+/g, "-") + "s-selected-" + today() + ".csv", ordersCSV(filtered().filter(function (o) { return U.sel[o.number]; })), "text/csv"); return false; },
     "export-all": function () { download(lnoun().replace(/\s+/g, "-") + "s-all-" + today() + ".csv", ordersCSV(allOrders().sort(function (a, b) { return natCmp(a.number, b.number); })), "text/csv"); return false; },
@@ -1493,9 +1575,13 @@
     "helper-dismiss": function (el) { var m = chat().msgs[+el.dataset.i]; if (m) m.state = "no"; },
     "helper-apply": function (el) {
       var m = chat().msgs[+el.dataset.i]; if (!m || m.state !== "open") return false;
-      m.state = "done"; render();
-      helperApply(m.actions).then(function (r) { toast(r.done ? "Applied " + plural(r.done, "change") + (r.problems ? ". " + r.problems + " couldn't be applied." : ".") : "Nothing could be applied."); });
-      return false;
+      var go = function () {
+        m.state = "done"; render();
+        helperApply(m.actions).then(function (r) { toast(r.done ? "Applied " + plural(r.done, "change") + (r.problems ? ". " + r.problems + " couldn't be applied." : ".") : "Nothing could be applied."); render(); });
+      };
+      var nDel = m.actions.filter(function (a) { return a.type === "delete_order" && ord(a.order); }).length;
+      if (nDel) { ask("This includes deleting " + plural(nDel, lnoun()) + " for good. That can't be undone. Apply anyway?", "Apply and delete", go, true); return; }
+      go(); return false;
     },
     "hold-pick": function (el) { U.modal.text = el.dataset.v; },
     "hold-go": function () { var m = U.modal, t = (($("#hold-text") || {}).value || m.text || "").trim(); if (!t) { toast("Say why it's on hold."); return false; } U.modal = null; if (m.bulk) bulkStatus(m.to, t); else moveStatus(m.number, m.to, t); },

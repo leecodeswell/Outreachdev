@@ -422,6 +422,44 @@
     });
   };
 
+  // Delete work orders for good (owners and admins). Their history entries stay in the database
+  // but nothing shows them; numbers are never handed out again.
+  function commitDeletes(paths) {
+    var chunks = [];
+    for (var i = 0; i < paths.length; i += 100) chunks.push(paths.slice(i, i + 100));
+    return chunks.reduce(function (p, ch) {
+      return p.then(function () { var b = F.writeBatch(db); ch.forEach(function (k) { b.delete(d(k)); }); return b.commit(); });
+    }, Promise.resolve());
+  }
+  St.deleteOrders = function (numbers) {
+    guard();
+    if (!W.canAdmin(St.myRole())) return Promise.reject({ message: "Only owners and admins can delete work orders." });
+    var paths = (numbers || []).filter(function (n) { return St.data.orders[W.docId(n)]; }).map(function (n) { return O("orders/" + W.docId(n)); });
+    return commitDeletes(paths).then(function () { return paths.length; });
+  };
+  // Remove the fictional sample shop: its work orders, and the sample customers and team members
+  // that nothing real uses. Settings (statuses, numbering) are kept.
+  St.sampleCount = function () { return Object.keys(St.data.orders).filter(function (k) { return St.data.orders[k].source === "sample"; }).length; };
+  St.removeSample = function () {
+    guard();
+    if (!W.canAdmin(St.myRole())) return Promise.reject({ message: "Only owners and admins can remove the sample data." });
+    var smp = W.sampleShop(W.iso(new Date())), paths = [];
+    var sampleOrders = Object.keys(St.data.orders).filter(function (k) { return St.data.orders[k].source === "sample"; });
+    sampleOrders.forEach(function (k) { paths.push(O("orders/" + k)); });
+    var keep = Object.keys(St.data.orders).filter(function (k) { return St.data.orders[k].source !== "sample"; }).map(function (k) { return St.data.orders[k]; });
+    var custNames = {}; smp.customers.forEach(function (c) { custNames[W.norm(c.name)] = 1; });
+    Object.keys(St.data.customers).forEach(function (id) {
+      var n = W.norm(St.data.customers[id].name);
+      if (custNames[n] && !keep.some(function (o) { return W.norm(o.customer) === n; })) paths.push(O("customers/" + id));
+    });
+    var members = St.data.members || {}, linked = {}; Object.keys(members).forEach(function (u) { linked[members[u].pid] = 1; });
+    smp.people.forEach(function (p) {
+      var cur = St.data.people[p.id];
+      if (cur && cur.name === p.name && !linked[p.id] && !keep.some(function (o) { return o.assignee === p.id; })) paths.push(O("people/" + p.id));
+    });
+    return commitDeletes(paths).then(function () { return sampleOrders.length; });
+  };
+
   St.addNote = function (number, text) {
     guard();
     text = String(text || "").trim(); if (!text) return Promise.resolve();

@@ -147,11 +147,12 @@
       var base = flow.getBoundingClientRect();
       W = base.width; H = base.height;
       if (!W || !H) return false;
-      var scale = 2;   // always drawn at 2x: smooth curves on every screen, without overworking 3x phones and 4K screens
+      var scale = Math.min(3, Math.max(2, window.devicePixelRatio || 1));   // at least 2x for smooth curves, up to 3x on very sharp screens
       canvas.width = Math.round(W * scale); canvas.height = Math.round(H * scale);
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
       var hr = hub.getBoundingClientRect();
-      HC = { x: hr.left - base.left + hr.width / 2, y: hr.top - base.top + hr.height / 2, r: hr.width / 2 };
+      // offsetWidth ignores the pop-in scale, so the ring is placed for the orb's real size
+      HC = { x: hr.left - base.left + hr.width / 2, y: hr.top - base.top + hr.height / 2, r: (hub.offsetWidth || hr.width) / 2 };
       twigLen = Math.min(66, W / 23);
       var rand = rng(11);
 
@@ -171,8 +172,9 @@
         for (var i = 0; i < n; i++) {
           var side = up ? (i % 3 === 1 ? -up : up) : (i % 2 ? 1 : -1);
           var tw = { at: 0.16 + (i + 0.2 + rand() * 0.6) * (0.66 / n), side: side, ang: 0.5 + rand() * 0.42, L: twigLen * (0.6 + rand() * 0.75), ph: rand() * 6.283, leaves: [] };
-          tw.leaves.push({ u: 1, side: 0, size: 7.5 + rand() * 4.5, ph: rand() * 6.283, sc: 1 });
-          if (rand() > 0.35) tw.leaves.push({ u: 0.5 + rand() * 0.2, side: rand() > 0.5 ? 1 : -1, size: 5.5 + rand() * 3.5, ph: rand() * 6.283, sc: 1 });
+          tw.leaves.push({ u: 1, side: 0, size: 14 + rand() * 8, ph: rand() * 6.283, sc: 1, kind: (rand() * 3) | 0, tone: pickTone(rand()) });
+          if (rand() > 0.25) tw.leaves.push({ u: 0.5 + rand() * 0.2, side: rand() > 0.5 ? 1 : -1, size: 10 + rand() * 6, ph: rand() * 6.283, sc: 1, kind: (rand() * 3) | 0, tone: pickTone(rand()) });
+          if (rand() > 0.55) tw.leaves.push({ u: 0.28 + rand() * 0.14, side: rand() > 0.5 ? 1 : -1, size: 8 + rand() * 4, ph: rand() * 6.283, sc: 1, kind: (rand() * 3) | 0, tone: pickTone(rand()) });
           p.twigs.push(tw);
         }
         return p;
@@ -234,22 +236,72 @@
       for (i = n; i >= 0; i--) ctx.lineTo(R[i][0], R[i][1]);
       ctx.closePath(); ctx.fill();
     }
-    function drawLeaf(x, y, ang, len, bright, alpha) {
+    // Leaves: three shapes, a few autumn-gold tones (and the odd violet one), lit on one half of the
+    // midrib and shaded on the other, with side veins and a bright rim. "flip" turns the leaf over in
+    // the breeze (1 = top side, 0 = edge-on, -1 = underside, which is paler).
+    var SHAPES = [
+      { w: 0.46, a: [0.16, 1.05], b: [0.6, 0.95] },    // ovate
+      { w: 0.30, a: [0.24, 1.0], b: [0.7, 0.72] },     // lance
+      { w: 0.58, a: [0.1, 0.75], b: [0.52, 1.18] }     // round
+    ];
+    var TONES = [
+      { base: [104, 78, 32], tip: [232, 196, 116], under: [242, 222, 176] },   // gold
+      { base: [96, 58, 22], tip: [222, 152, 70], under: [238, 200, 152] },     // amber
+      { base: [78, 66, 36], tip: [214, 196, 138], under: [232, 224, 196] },    // champagne
+      { base: [62, 42, 98], tip: [182, 146, 236], under: [218, 202, 244] }     // violet
+    ];
+    function pickTone(r) { return r < 0.38 ? 0 : r < 0.68 ? 1 : r < 0.93 ? 2 : 3; }
+    function rgba(c, k, a) { return "rgba(" + (c[0] * k | 0) + "," + (c[1] * k | 0) + "," + (c[2] * k | 0) + "," + a + ")"; }
+    function lift(c, k) { return [c[0] + (255 - c[0]) * k, c[1] + (255 - c[1]) * k, c[2] + (255 - c[2]) * k]; }
+    function drawLeaf(x, y, ang, len, bright, alpha, kind, tone, flip) {
       if (len < 0.4) return;
-      var w = len * 0.42;
-      ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.globalAlpha = alpha == null ? 1 : alpha;
-      var g = ctx.createLinearGradient(0, 0, len, 0);
-      g.addColorStop(0, "rgba(120,94,42," + (0.55 + 0.3 * bright) + ")");
-      g.addColorStop(1, "rgba(" + (214 + 30 * bright | 0) + "," + (178 + 40 * bright | 0) + "," + (104 + 50 * bright | 0) + "," + (0.6 + 0.35 * bright) + ")");
-      ctx.beginPath(); ctx.moveTo(0, 0);
-      ctx.bezierCurveTo(len * 0.25, -w, len * 0.72, -w * 0.82, len, 0);
-      ctx.bezierCurveTo(len * 0.72, w * 0.82, len * 0.25, w, 0, 0);
-      ctx.fillStyle = g; ctx.fill();
-      ctx.lineWidth = 0.5; ctx.strokeStyle = "rgba(240,212,150," + (0.25 + 0.45 * bright) + ")"; ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(len * 0.06, 0); ctx.lineTo(len * 0.86, 0);
-      ctx.strokeStyle = "rgba(255,236,190," + (0.18 + 0.3 * bright) + ")"; ctx.lineWidth = 0.45; ctx.stroke();
+      var S = SHAPES[kind || 0], T = TONES[tone || 0], f = flip == null ? 1 : flip;
+      if (Math.abs(f) < 0.06) f = f < 0 ? -0.06 : 0.06;
+      var w = len * S.w, under = f < 0, stalk = len * 0.14, L = len;
+      var tipC = lift(under ? T.under : T.tip, 0.28 * bright), baseC = lift(T.base, 0.2 * bright);
+      ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
+      ctx.globalAlpha = alpha == null ? 1 : alpha;
+      // stalk
+      ctx.strokeStyle = rgba(T.tip, 0.8, 0.55); ctx.lineWidth = Math.max(0.7, len * 0.05); ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(stalk, 0); ctx.stroke();
+      ctx.translate(stalk, 0); ctx.scale(1, f);
+      function half(sg) {
+        ctx.beginPath(); ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(L * S.a[0], sg * w * S.a[1], L * S.b[0], sg * w * S.b[1], L, 0);
+        ctx.closePath();
+      }
+      // the lit half and the shaded half
+      var g1 = ctx.createLinearGradient(0, 0, L, 0);
+      g1.addColorStop(0, rgba(baseC, 1, 0.92)); g1.addColorStop(0.55, rgba(tipC, 0.92, 0.95)); g1.addColorStop(1, rgba(tipC, 1, 1));
+      half(-1); ctx.fillStyle = g1; ctx.fill();
+      var g2 = ctx.createLinearGradient(0, 0, L, 0);
+      g2.addColorStop(0, rgba(baseC, 0.7, 0.95)); g2.addColorStop(1, rgba(tipC, 0.68, 0.95));
+      half(1); ctx.fillStyle = g2; ctx.fill();
+      // a soft sheen across the lit half
+      var sh = ctx.createLinearGradient(0, -w * 0.9, 0, 0);
+      sh.addColorStop(0, "rgba(255,244,220," + (0.16 + 0.22 * bright) + ")"); sh.addColorStop(1, "rgba(255,244,220,0)");
+      half(-1); ctx.fillStyle = sh; ctx.fill();
+      // veins
+      var vA = 0.22 + 0.4 * bright, lw = Math.max(0.45, len * 0.028);
+      ctx.strokeStyle = "rgba(255,238,196," + vA + ")"; ctx.lineWidth = lw;
+      ctx.beginPath();
+      for (var v = 1; v <= 4; v++) {
+        var u = 0.12 + v * 0.17, reach = w * S.b[1] * 0.62 * (1 - u * 0.45);
+        ctx.moveTo(L * u, 0); ctx.quadraticCurveTo(L * (u + 0.07), -reach * 0.55, L * (u + 0.15), -reach);
+        ctx.moveTo(L * u, 0); ctx.quadraticCurveTo(L * (u + 0.07), reach * 0.55, L * (u + 0.15), reach);
+      }
+      ctx.stroke();
+      // midrib
+      ctx.strokeStyle = "rgba(255,240,206," + (0.42 + 0.45 * bright) + ")"; ctx.lineWidth = lw * 1.7;
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(L * 0.5, -w * 0.04, L * 0.94, 0); ctx.stroke();
+      // bright rim on the lit edge
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.bezierCurveTo(L * S.a[0], -w * S.a[1], L * S.b[0], -w * S.b[1], L, 0);
+      ctx.strokeStyle = "rgba(255,236,190," + (0.32 + 0.5 * bright) + ")"; ctx.lineWidth = lw * 1.4; ctx.stroke();
+      // a darker edge on the shaded side gives the leaf body
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.bezierCurveTo(L * S.a[0], w * S.a[1], L * S.b[0], w * S.b[1], L, 0);
+      ctx.strokeStyle = rgba(T.base, 0.6, 0.5); ctx.lineWidth = lw; ctx.stroke();
       ctx.restore();
-      if (bright > 0.25) glow(x + Math.cos(ang) * len * 0.5, y + Math.sin(ang) * len * 0.5, len * 1.6, bright * 0.35);
+      if (bright > 0.2) glow(x + Math.cos(ang) * len * 0.6, y + Math.sin(ang) * len * 0.6, len * 2, bright * 0.45);
     }
     // how much light is passing a point on a branch right now (0..1)
     function energy(p, t) {
@@ -294,30 +346,56 @@
           var rustle = 1;
           if (ptr.on) { var dd = Math.hypot(at.x - ptr.x, at.y - ptr.y); if (dd < 150) rustle += (1 - dd / 150) * 3; }
           var ang = base + lf.side * 0.75 + Math.sin(t * 2.3 + lf.ph) * 0.16 * amp * rustle + (rustle > 1 ? Math.sin(t * 9 + lf.ph) * 0.05 * (rustle - 1) : 0);
+          // turn over a little in the breeze, much more when the cursor rustles them
+          var calm = 1 - 0.3 * amp * (0.5 + 0.5 * Math.sin(t * 1.5 + lf.ph * 1.7)), shake = clamp((rustle - 1) / 2.5, 0, 1);
+          var flip = calm * (1 - shake) + Math.cos(t * 7 + lf.ph) * shake;
           lf.x = at.x; lf.y = at.y; lf.a = ang;
-          drawLeaf(at.x, at.y, ang, lf.size * easeBack(lg) * Math.min(1, lf.sc), lit, 1);
+          drawLeaf(at.x, at.y, ang, lf.size * easeBack(lg) * Math.min(1, lf.sc), lit, 1, lf.kind, lf.tone, flip);
         });
       });
       if (g < 1) { var tip = pts[pts.length - 1]; glow(tip.x, tip.y, 14, 0.9); }
     }
 
-    function drawHub(t, a) {
+    // The ring around the logo: a fine bezel of ticks with a slow sweep of light, faint guide circles,
+    // and four tapered comets orbiting at two radii. Brightens for a moment when a pulse arrives.
+    var hubFlash = 0;
+    function arcPts(r, a0, a1, n) { var out = []; for (var k = 0; k <= n; k++) { var aa = a0 + (a1 - a0) * k / n; out.push({ x: HC.x + Math.cos(aa) * r, y: HC.y + Math.sin(aa) * r }); } return out; }
+    function drawHub(t, a, dt) {
       if (a <= 0) return;
-      var R1 = HC.r + 16, R2 = HC.r + 30;
-      ctx.lineCap = "round"; ctx.lineWidth = 1.1;
-      [[R1, 0.22, 0.9, 0.3], [R1, -0.16, 0.45, 0.22], [R2, 0.09, 1.4, 0.14], [R2, -0.12, 0.35, 0.18]].forEach(function (o, i) {
-        var s0 = t * o[1] + i * 1.7;
-        ctx.strokeStyle = "rgba(214,178,100," + o[3] * a + ")";
-        ctx.beginPath(); ctx.arc(HC.x, HC.y, o[0], s0, s0 + o[2]); ctx.stroke();
+      hubFlash = Math.max(0, hubFlash - (dt || 0) * 1.4);
+      var R0 = HC.r + 9, R1 = HC.r + 20, R2 = HC.r + 36;
+      ctx.lineCap = "round";
+      // guide circles
+      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = "rgba(214,178,100," + (0.08 + 0.1 * hubFlash) * a + ")"; ctx.beginPath(); ctx.arc(HC.x, HC.y, R1, 0, 6.283); ctx.stroke();
+      ctx.strokeStyle = "rgba(214,178,100," + (0.05 + 0.08 * hubFlash) * a + ")"; ctx.beginPath(); ctx.arc(HC.x, HC.y, R2, 0, 6.283); ctx.stroke();
+      // bezel ticks with a sweeping highlight
+      var N = 72, sweep = t * 0.42;
+      for (var i = 0; i < N; i++) {
+        var an = i / N * 6.283, hl = Math.pow(0.5 + 0.5 * Math.cos(an - sweep), 8), major = i % 6 === 0;
+        var len = major ? 5 : 2.6, al = (0.1 + 0.62 * hl + 0.35 * hubFlash) * a;
+        ctx.strokeStyle = "rgba(" + (226 + 29 * hl | 0) + "," + (190 + 44 * hl | 0) + "," + (112 + 80 * hl | 0) + "," + al + ")";
+        ctx.lineWidth = major ? 1.8 : 1.3;
+        ctx.beginPath(); ctx.moveTo(HC.x + Math.cos(an) * R0, HC.y + Math.sin(an) * R0); ctx.lineTo(HC.x + Math.cos(an) * (R0 + len), HC.y + Math.sin(an) * (R0 + len)); ctx.stroke();
+      }
+      // comets
+      ctx.globalCompositeOperation = "lighter";
+      [[R1, 0.34, 1.35, 3.4, 0.95], [R1, -0.23, 0.75, 2.4, 0.6], [R2, 0.15, 1.7, 3.0, 0.7], [R2, -0.19, 0.55, 2.2, 0.5]].forEach(function (o, k) {
+        var head = t * o[1] + k * 1.7, tail = head - o[2] * (o[1] > 0 ? 1 : -1);
+        var pts = arcPts(o[0], tail, head, 36), A = o[4] * a * (1 + 0.4 * hubFlash);
+        var g = ctx.createLinearGradient(pts[0].x, pts[0].y, pts[36].x, pts[36].y);
+        g.addColorStop(0, "rgba(226,190,112,0)"); g.addColorStop(0.65, "rgba(236,204,136," + 0.4 * A + ")"); g.addColorStop(1, "rgba(255,240,205," + Math.min(1, A) + ")");
+        ctx.fillStyle = g; ribbon(pts, 0.2, o[3]);
+        var hp = pts[36];
+        glow(hp.x, hp.y, 16, 0.8 * A);
+        ctx.fillStyle = "rgba(255,250,236," + Math.min(1, A) + ")"; ctx.beginPath(); ctx.arc(hp.x, hp.y, o[3] * 0.55, 0, 6.283); ctx.fill();
       });
-      var d1 = t * 0.22 + 0.9, d2 = -t * 0.12 + 3;
-      glow(HC.x + Math.cos(d1) * R1, HC.y + Math.sin(d1) * R1, 9, 0.55 * a);
-      glow(HC.x + Math.cos(d2) * R2, HC.y + Math.sin(d2) * R2, 7, 0.4 * a);
+      ctx.globalCompositeOperation = "source-over";
     }
 
     /* ---------- light pulses ---------- */
     function lit(node) { node.classList.add("is-lit"); setTimeout(function () { node.classList.remove("is-lit"); }, 900); }
-    function hubPulse() { ripples.push({ age: 0 }); hub.classList.add("is-pulse"); setTimeout(function () { hub.classList.remove("is-pulse"); }, 520); }
+    function hubPulse() { hubFlash = 1; ripples.push({ age: 0 }); hub.classList.add("is-pulse"); setTimeout(function () { hub.classList.remove("is-pulse"); }, 520); }
     function spawnIn(p) {
       var ins = paths.filter(function (x) { return x.kind === "in"; });
       p = p || ins[Math.floor(Math.random() * ins.length)];
@@ -351,7 +429,7 @@
       paths.forEach(function (p) { p.twigs.forEach(function (tw) { tw.leaves.forEach(function (lf) { if (lf.sc >= 1 && lf.x != null) pool.push(lf); }); }); });
       var lf = pool[Math.floor(Math.random() * pool.length)];
       if (!lf) return;
-      falling.push({ x: lf.x, y: lf.y, a: lf.a, len: lf.size, vx: (Math.random() - 0.5) * 8, vy: 4, spin: (Math.random() - 0.5) * 2.2, age: 0, life: 5 + Math.random() * 2.5, ph: Math.random() * 6.283 });
+      falling.push({ x: lf.x, y: lf.y, a: lf.a, len: lf.size, kind: lf.kind, tone: lf.tone, vx: (Math.random() - 0.5) * 8, vy: 4, spin: (Math.random() - 0.5) * 2.2, age: 0, life: 6 + Math.random() * 3, ph: Math.random() * 6.283, tumble: 2.2 + Math.random() * 1.6 });
       lf.sc = -1.2;   // it grows back after a little while
     }
 
@@ -400,7 +478,7 @@
         p.twigs.forEach(function (tw) { tw.leaves.forEach(function (lf) { if (lf.sc < 1) lf.sc = Math.min(1, lf.sc + dt / 1.6); }); });
         drawBranch(p, 1, t, amp);
       });
-      drawHub(t, amp);
+      drawHub(t, amp, dt);
 
       // falling leaves
       nextFall -= dt;
@@ -411,7 +489,7 @@
         L.x += (L.vx + Math.sin(L.age * 2.1 + L.ph) * 15 + w * 10) * dt; L.y += L.vy * dt;
         L.a += (L.spin + Math.cos(L.age * 2.1 + L.ph) * 0.9) * dt;
         var al = Math.min(1, L.age * 3) * (1 - clamp((L.age - (L.life - 1.6)) / 1.6, 0, 1));
-        drawLeaf(L.x, L.y, L.a, L.len * (0.92 + 0.08 * Math.sin(L.age * 4 + L.ph)), 0.1, al);
+        drawLeaf(L.x, L.y, L.a, L.len, 0.08, al, L.kind, L.tone, Math.cos(L.age * L.tumble + L.ph));
         if (L.age > L.life || L.y > H + 20) falling.splice(f, 1);
       }
 
@@ -434,8 +512,11 @@
       for (i = ripples.length - 1; i >= 0; i--) {
         var r = ripples[i]; r.age += dt; var x = r.age / 1.2;
         if (x >= 1) { ripples.splice(i, 1); continue; }
-        ctx.strokeStyle = "rgba(236,204,136," + 0.4 * Math.pow(1 - x, 2) + ")"; ctx.lineWidth = 1.3;
-        ctx.beginPath(); ctx.arc(HC.x, HC.y, HC.r + 4 + ease(x) * 52, 0, 6.283); ctx.stroke();
+        var rr = HC.r + 4 + ease(x) * 60, ra = Math.pow(1 - x, 2);
+        ctx.strokeStyle = "rgba(226,190,112," + 0.14 * ra + ")"; ctx.lineWidth = 9;
+        ctx.beginPath(); ctx.arc(HC.x, HC.y, rr, 0, 6.283); ctx.stroke();
+        ctx.strokeStyle = "rgba(246,220,160," + 0.6 * ra + ")"; ctx.lineWidth = 2.4;
+        ctx.beginPath(); ctx.arc(HC.x, HC.y, rr, 0, 6.283); ctx.stroke();
       }
       for (i = sparks.length - 1; i >= 0; i--) {
         var s = sparks[i]; s.age += dt; if (s.age > s.life) { sparks.splice(i, 1); continue; }

@@ -70,7 +70,7 @@
     var W = {
       pref: f.preferences ? 30 * num(w.preferences, 3) : 0,  // per preferred (or avoided) shift
       pair: f.preferPairs ? 30 * num(w.pairs, 3) : 0,        // per work-well-together pair on a shift
-      fair: f.fairness ? 3 * num(w.fairness, 3) : 0,         // per (hour off fair share) squared
+      fair: f.fairness ? 3 * num(w.fairness, 3) : 1,         // per (hour off fair share) squared; a light touch even when "Fair hours" is off
       rest: f.rest ? 120 * num(w.rest, 3) : 0,               // per short turnaround
       minh: 60 * num(w.minHours, 3)                          // per hour under minimum
     };

@@ -691,7 +691,10 @@
     var key = weekKey(), w = wk(key), it = instByKey(key, d.k);
     if (!it) { T.drawer = null; return ""; }
     var a = (w.assign[it.key] || []).filter(person), L = w.locks[it.key] || {};
-    var A = analysis(key), mine = A.issues.filter(function (is) { return is.key === it.key; });
+    // this shift's own notes, plus people on it who are double-booked, over their max or short on rest
+    var A = analysis(key), mine = A.issues.filter(function (is) {
+      return is.key === it.key || is.a === it.key || is.b === it.key || ((is.type === "over" || is.type === "overlap") && is.pid && a.indexOf(is.pid) >= 0);
+    });
     var h = '<div class="drawer-head"><div style="flex:1"><h2>' + esc(it.name) + (it.extra ? ' <span class="chip">One-off</span>' : "") + "</h2><p>" + dateLabel(it.date, true) + " · " + fmtR(it.start, it.end) + " · " + fmtH(durH(it.start, it.end)) + "</p></div>" +
       '<button class="btn btn-icon btn-ghost" data-act="close" aria-label="Close">' + icon("x") + "</button></div>";
     h += '<div class="drawer-body">';
@@ -1359,7 +1362,7 @@
      It runs on a Firebase function (the key never reaches the browser).
      Changes are only proposed; the owner presses Apply.
      ------------------------------------------------------------------ */
-  var HELPER_EX = ["Who is working Saturday?", "Why is the schedule short on Friday?", "Give {name} Friday off and fix the schedule.", "Who is closest to their max hours?"];
+  var HELPER_EX = ["Who is working Saturday?", "Give {name} Friday off and fix the schedule.", "Add a 5pm–9pm shift on Fridays for 2 people.", "Who is closest to their max hours?"];
   function chat() { return T.chat || (T.chat = { msgs: [], busy: false, draft: "", error: "" }); }
   function helperReady() { return CLOUD && SACloud.status === "owner"; }
   function needsAddon() { return CLOUD && (chat().addon || SACloud.aiAccess().state === "needs-addon"); }
@@ -1374,71 +1377,204 @@
     var key = weekKey(), w = wk(key), dates = weekDates(key).map(iso), list = instances(key);
     var A = analysis(key);
     var show = function (v) { return !v ? "unset" : v.s === "off" ? "off" : v.s === "win" ? v.from + "-" + v.to : "any"; };
+    var RN = function (ids) { return (ids || []).map(function (r) { return (role(r) || {}).name; }).filter(Boolean); };
     return {
       business: S.business.name || "", week: key, weekStartsOn: DAYS[S.business.weekStart], dates: dates,
       dayNames: dates.map(function (d) { return DAYS[parseISO(d).getDay()]; }),
       roles: S.roles.map(function (r) { return { id: r.id, name: r.name }; }),
       people: S.people.map(function (p) {
-        var av = {}; dates.forEach(function (d) { av[d] = show(availOf(p, key, d).v); });
-        return { id: p.id, name: p.name, type: p.type === "fixed" ? "set schedule" : "part-time", roles: (p.roles || []).map(function (r) { return (role(r) || {}).name; }).filter(Boolean),
-          minHours: +p.min || 0, maxHours: p.max === "" || p.max == null ? null : +p.max, availability: av };
+        var av = {}, usual = {}, prefs = {};
+        dates.forEach(function (d) { av[d] = show(availOf(p, key, d).v); });
+        Object.keys(p.pattern || {}).forEach(function (dw) { usual[DAYS[dw]] = show(p.pattern[dw]); });
+        Object.keys(p.prefs || {}).forEach(function (sid) { if (tpl(sid)) prefs[tpl(sid).name || sid] = p.prefs[sid]; });
+        return { id: p.id, name: p.name, type: p.type === "fixed" ? "set schedule" : "part-time", roles: RN(p.roles),
+          minHours: +p.min || 0, maxHours: p.max === "" || p.max == null ? null : +p.max, availability: av, usualAvailability: usual, shiftPreferences: prefs };
+      }),
+      templates: S.shifts.map(function (s) {
+        return { id: s.id, name: s.name, start: s.start, end: s.end, days: DAYS.filter(function (d, i) { return s.days[i]; }), count: +s.count || 0,
+          needs: (s.needs || []).map(function (n) { return { role: (role(n.role) || {}).name, count: n.count }; }).filter(function (n) { return n.role; }) };
       }),
       shifts: list.map(function (it) {
-        return { key: it.key, date: it.date, day: DAYS[it.dow], name: it.name, start: it.start, end: it.end, needed: it.count,
-          assigned: (w.assign[it.key] || []).filter(person) };
+        var L = w.locks[it.key] || {};
+        return { key: it.key, template: it.extra ? null : it.shiftId, oneOff: !!it.extra, date: it.date, day: DAYS[it.dow], name: it.name, start: it.start, end: it.end, needed: it.count,
+          assigned: (w.assign[it.key] || []).filter(person), locked: Object.keys(L).filter(function (pid) { return L[pid] && person(pid); }) };
       }),
-      problems: A.issues.slice(0, 25).map(function (is) { return issueText(is, key).t; }),
-      published: w.status === "published"
+      pairs: S.pairs.filter(function (x) { return person(x.a) && person(x.b); }).map(function (x) { return { a: x.a, b: x.b, kind: x.type }; }),
+      features: Object.assign({}, S.features, { allowDoubles: !!S.business.allowDoubles }),
+      problems: A.issues.slice(0, 30).map(function (is) { return issueText(is, key).t; }),
+      published: w.status === "published", generated: !!w.generated
     };
   }
 
+  function ppl(n) { return n + (n === 1 ? " person" : " people"); }
+  function availFrom(v) {
+    if (v === "any") return { s: "any" };
+    if (v === "off") return { s: "off" };
+    if (v === "clear" || !v) return null;
+    var m = /^(\d\d:\d\d)-(\d\d:\d\d)$/.exec(v); return m ? { s: "win", from: m[1], to: m[2] } : null;
+  }
+  function availWords(v) { return v === "any" ? "any time" : v === "off" ? "off" : v === "clear" ? "not set" : (function () { var m = v.split("-"); return fmtT(m[0]) + "–" + fmtT(m[1]); })(); }
+  function roleIdsFor(names, create) {
+    return (names || []).map(function (n) {
+      var r = S.roles.find(function (x) { return x.name.toLowerCase() === String(n).toLowerCase().trim(); });
+      if (!r && create) r = addRole(n);
+      return r && r.id;
+    }).filter(Boolean);
+  }
+  var FEATURE_WORDS = { roles: "Roles", preferences: "Shift preferences", avoidPairs: "Never-together pairs", preferPairs: "Work-well-together pairs", fairness: "Fair hours", rest: "Rest between shifts", rescue: "Shift cover", weights: "Priority sliders", allowDoubles: "Two shifts in one day" };
+
   function helperDescribe(a) {
     var P = function (id) { return (person(id) || {}).name || "someone"; };
-    var key = weekKey();
-    if (a.type === "regenerate") return { t: "Re-run the automatic scheduler (shifts you've locked stay)", ok: true };
+    var key = weekKey(), inWeek = function (d) { return weekDates(key).some(function (x) { return iso(x) === d; }); };
+    var T_ = function (id) { var s = tpl(id); return s ? (s.name || "Shift") : null; };
+    var IT = function (k) { var it = instByKey(key, k); return it ? it.name + ", " + dateLabel(it.date) + " " + fmtT(it.start) + "–" + fmtT(it.end) : null; };
+    switch (a.type) {
+      case "regenerate": return { t: "Re-run the automatic scheduler (shifts you've locked stay)", ok: true };
+      case "publish": return { t: "Publish " + weekLabel(key) + " to your team", ok: true, big: true };
+      case "add_role": return { t: "Add the role \u201c" + a.name + "\u201d", ok: true };
+      case "set_feature": return FEATURE_WORDS[a.feature] ? { t: (a.on ? "Turn on " : "Turn off ") + FEATURE_WORDS[a.feature], ok: true } : { t: "Unknown feature", ok: false };
+      case "add_person": return { t: "Add " + a.name + " to the team" + (a.roles && a.roles.length ? " (" + a.roles.join(", ") + ")" : "") + (a.max != null ? ", up to " + fmtH(a.max) : ""), ok: true };
+      case "add_shift": return { t: "New regular shift \u201c" + a.name + "\u201d " + fmtT(a.start) + "–" + fmtT(a.end) + ", " + (a.days.length === 7 ? "every day" : a.days.map(function (d) { return DAYS[d].slice(0, 3); }).join(" ")) + ", " + ppl(a.count), ok: true };
+      case "add_extra_shift": return inWeek(a.date) ? { t: "One-off \u201c" + a.name + "\u201d on " + dateLabel(a.date) + " " + fmtT(a.start) + "–" + fmtT(a.end) + " (" + ppl(a.count) + ")", ok: true } : { t: "Extra shift outside this week", ok: false };
+      case "update_shift": {
+        var nm = T_(a.template); if (!nm) return { t: "A shift that no longer exists", ok: false };
+        var bits = []; if (a.name) bits.push("rename to \u201c" + a.name + "\u201d"); if (a.start || a.end) bits.push((a.start ? fmtT(a.start) : fmtT(tpl(a.template).start)) + "–" + (a.end ? fmtT(a.end) : fmtT(tpl(a.template).end)));
+        if (a.count != null) bits.push(ppl(a.count)); if (a.days) bits.push(a.days.length === 7 ? "every day" : a.days.map(function (d) { return DAYS[d].slice(0, 3); }).join(" ")); if (a.needs) bits.push("needs " + (a.needs.map(function (n) { return n.count + " " + n.role; }).join(", ") || "no roles"));
+        return { t: "Regular shift \u201c" + nm + "\u201d: " + bits.join(", "), ok: true };
+      }
+      case "delete_shift": return T_(a.template) ? { t: "Delete the regular shift \u201c" + T_(a.template) + "\u201d from every week", ok: true, big: true } : { t: "A shift that no longer exists", ok: false };
+      case "change_day": {
+        var lbl = IT(a.shift); if (!lbl) return { t: "A shift not in this week", ok: false };
+        if (a.cancel) return { t: "Cancel " + lbl, ok: true };
+        var b2 = []; if (a.start || a.end) b2.push("time " + (a.start ? fmtT(a.start) : "same") + "–" + (a.end ? fmtT(a.end) : "same")); if (a.count != null) b2.push(ppl(a.count));
+        return { t: lbl + ": " + b2.join(", "), ok: true };
+      }
+    }
     var p = person(a.person);
     if (!p) return { t: "Someone who isn't on your team", ok: false };
-    if (a.type === "time_off") {
-      var ds = (a.dates || []).filter(function (d) { return weekDates(key).some(function (x) { return iso(x) === d; }); });
-      return { t: P(a.person) + " off " + ds.map(function (d) { return dateLabel(d); }).join(", "), ok: ds.length > 0 };
+    switch (a.type) {
+      case "time_off": var ds = (a.dates || []).filter(inWeek); return { t: P(a.person) + " off " + ds.map(function (d) { return dateLabel(d); }).join(", "), ok: ds.length > 0 };
+      case "set_availability": return inWeek(a.date) ? { t: P(a.person) + " on " + dateLabel(a.date) + ": " + availWords(a.value), ok: true } : { t: "A date outside this week", ok: false };
+      case "set_usual_availability": return { t: P(a.person) + ", usual " + DAYS[a.day] + "s: " + availWords(a.value), ok: true };
+      case "update_person": {
+        var b3 = []; if (a.name) b3.push("rename to " + a.name); if (a.roles) b3.push("roles: " + (a.roles.join(", ") || "none")); if (a.min != null || a.max != null) b3.push("hours " + (a.min != null ? fmtH(a.min) : fmtH(+p.min || 0)) + "–" + (a.max != null ? fmtH(a.max) : (p.max === "" ? "no max" : fmtH(+p.max))));
+        return { t: P(a.person) + ": " + b3.join(", "), ok: true };
+      }
+      case "remove_person": return { t: "Remove " + P(a.person) + " from the team and every schedule", ok: true, big: true };
+      case "set_pair": return person(a.other) ? { t: a.kind === "none" ? "Remove the pairing of " + P(a.person) + " and " + P(a.other) : P(a.person) + " and " + P(a.other) + (a.kind === "never" ? " never work together" : " work well together"), ok: true } : { t: "Someone who isn't on your team", ok: false };
+      case "set_preference": return T_(a.template) ? { t: P(a.person) + (a.value === "none" ? " has no preference for " : a.value === "prefer" ? " prefers " : " would rather avoid ") + T_(a.template), ok: true } : { t: "A shift that no longer exists", ok: false };
     }
-    var it = instByKey(key, a.shift);
-    if (!it) return { t: (a.type === "assign" ? "Add " : "Remove ") + P(a.person) + " (shift not found)", ok: false };
-    return { t: (a.type === "assign" ? "Put " + P(a.person) + " on " : "Take " + P(a.person) + " off ") + it.name + ", " + dateLabel(it.date) + " " + fmtT(it.start) + "–" + fmtT(it.end), ok: true };
+    var lbl2 = IT(a.shift);
+    if (!lbl2) return { t: P(a.person) + " (shift not found)", ok: false };
+    if (a.type === "assign") return { t: "Put " + P(a.person) + " on " + lbl2, ok: true };
+    if (a.type === "unassign") return { t: "Take " + P(a.person) + " off " + lbl2, ok: true };
+    if (a.type === "lock") return { t: "Lock " + P(a.person) + " onto " + lbl2, ok: true };
+    if (a.type === "unlock") return { t: "Unlock " + P(a.person) + " on " + lbl2, ok: true };
+    return { t: a.type, ok: false };
   }
 
+  function removeFromShift(w, it, pid) {
+    var L = w.locks[it.key] || {};
+    if (L[pid] === "fixed") w.fixedSkip[it.key + "|" + pid] = true;
+    w.assign[it.key] = (w.assign[it.key] || []).filter(function (x) { return x !== pid; }); delete L[pid];
+  }
   function helperApply(actions) {
-    var key = weekKey(), w = wk(key), n = 0, regen = false;
+    var key = weekKey(), w = wk(key), n = 0, regen = false, pub = false, setupChanged = false;
     actions.forEach(function (a) {
-      if (a.type === "regenerate") { regen = true; return; }
-      var p = person(a.person); if (!p) return;
-      if (a.type === "time_off") {
-        (a.dates || []).forEach(function (d) {
-          if (!weekDates(key).some(function (x) { return iso(x) === d; })) return;
-          setAvail(p.id, d, { s: "off" });
-          instances(key).forEach(function (it) {
-            if (it.date !== d) return;
-            var arr = w.assign[it.key] || [], L = w.locks[it.key] || {};
-            if (L[p.id] === "fixed") w.fixedSkip[it.key + "|" + p.id] = true;
-            w.assign[it.key] = arr.filter(function (x) { return x !== p.id; }); delete L[p.id];
-            pubEdit(w, it.key, function (pp) { var j = pp.indexOf(p.id); if (j >= 0) pp.splice(j, 1); });
+      if (!helperDescribe(a).ok) return;
+      var p = a.person ? person(a.person) : null, it, s;
+      switch (a.type) {
+        case "regenerate": regen = true; return;
+        case "publish": pub = true; return;
+        case "add_role": addRole(a.name); n++; setupChanged = true; return;
+        case "set_feature": if (a.feature === "allowDoubles") S.business.allowDoubles = a.on; else S.features[a.feature] = a.on; n++; return;
+        case "add_person": {
+          var np = newPerson(a.name); np.roles = roleIdsFor(a.roles, true);
+          if (a.min != null) np.min = a.min; if (a.max != null) np.max = a.max;
+          n++; setupChanged = true; return;
+        }
+        case "add_shift": {
+          s = newShift(a.name, a.start, a.end, a.count);
+          s.days = [0, 1, 2, 3, 4, 5, 6].map(function (d) { return a.days.indexOf(d) >= 0; });
+          s.needs = (a.needs || []).map(function (x) { var r = roleIdsFor([x.role], true)[0]; return r ? { role: r, count: x.count } : null; }).filter(Boolean);
+          n++; setupChanged = true; return;
+        }
+        case "update_shift": {
+          s = tpl(a.template); if (!s) return;
+          if (a.name) s.name = a.name; if (a.start) s.start = a.start; if (a.end) s.end = a.end;
+          if (a.count != null) { s.count = a.count; s.perDay = {}; }
+          if (a.days) s.days = [0, 1, 2, 3, 4, 5, 6].map(function (d) { return a.days.indexOf(d) >= 0; });
+          if (a.needs) s.needs = a.needs.map(function (x) { var r = roleIdsFor([x.role], true)[0]; return r ? { role: r, count: x.count } : null; }).filter(Boolean);
+          n++; setupChanged = true; return;
+        }
+        case "delete_shift": S.shifts = S.shifts.filter(function (x) { return x.id !== a.template; }); S.people.forEach(function (pp) { if (pp.prefs) delete pp.prefs[a.template]; }); n++; setupChanged = true; return;
+        case "add_extra_shift": w.extra.push({ id: "x" + uid(), date: a.date, name: a.name, start: a.start, end: a.end, count: a.count, needs: [] }); n++; return;
+        case "change_day": {
+          it = instByKey(key, a.shift); if (!it) return;
+          var ex = it.extra ? w.extra.find(function (x) { return x.id === it.shiftId; }) : null;
+          if (a.cancel) {
+            if (ex) w.extra = w.extra.filter(function (x) { return x !== ex; }); else (w.over[it.key] = w.over[it.key] || {}).removed = true;
+            delete w.assign[it.key]; delete w.locks[it.key];
+          } else {
+            var o = ex || (w.over[it.key] = w.over[it.key] || {});
+            if (a.start) o.start = a.start; if (a.end) o.end = a.end; if (a.count != null) o.count = a.count;
+          }
+          n++; return;
+        }
+      }
+      if (!p) return;
+      switch (a.type) {
+        case "time_off":
+          (a.dates || []).forEach(function (d) {
+            setAvail(p.id, d, { s: "off" });
+            instances(key).forEach(function (x) {
+              if (x.date !== d) return;
+              removeFromShift(w, x, p.id);
+              pubEdit(w, x.key, function (pp) { var j = pp.indexOf(p.id); if (j >= 0) pp.splice(j, 1); });
+            });
+            n++;
           });
-          n++;
-        });
-      } else if (a.type === "assign") {
-        var it = instByKey(key, a.shift); if (!it) return;
+          return;
+        case "set_availability": setAvail(p.id, a.date, availFrom(a.value)); n++; return;
+        case "set_usual_availability": {
+          var v = availFrom(a.value); p.pattern = p.pattern || {};
+          if (v) p.pattern[a.day] = v; else delete p.pattern[a.day];
+          n++; return;
+        }
+        case "update_person":
+          if (a.name) p.name = a.name; if (a.roles) p.roles = roleIdsFor(a.roles, true);
+          if (a.min != null) p.min = a.min; if (a.max != null) p.max = a.max;
+          n++; setupChanged = true; return;
+        case "remove_person": {
+          var pid = p.id;
+          S.people = S.people.filter(function (x) { return x.id !== pid; });
+          S.pairs = S.pairs.filter(function (x) { return x.a !== pid && x.b !== pid; });
+          Object.keys(S.weeks).forEach(function (k) { var ww = S.weeks[k]; Object.keys(ww.assign || {}).forEach(function (sk) { ww.assign[sk] = ww.assign[sk].filter(function (x) { return x !== pid; }); }); });
+          n++; setupChanged = true; return;
+        }
+        case "set_pair":
+          S.pairs = S.pairs.filter(function (x) { return !((x.a === a.person && x.b === a.other) || (x.a === a.other && x.b === a.person)); });
+          if (a.kind !== "none") {
+            S.pairs.push({ id: uid(), a: a.person, b: a.other, type: a.kind });
+            if (a.kind === "never") S.features.avoidPairs = true; else S.features.preferPairs = true;
+          }
+          n++; return;
+        case "set_preference":
+          p.prefs = p.prefs || {};
+          if (a.value === "none") delete p.prefs[a.template]; else { p.prefs[a.template] = a.value; S.features.preferences = true; }
+          n++; return;
+      }
+      it = instByKey(key, a.shift); if (!it) return;
+      if (a.type === "assign" || a.type === "lock") {
         var arr = w.assign[it.key] || (w.assign[it.key] = []);
         if (arr.indexOf(p.id) < 0) arr.push(p.id);
         (w.locks[it.key] = w.locks[it.key] || {})[p.id] = true; delete w.blocked[it.key + "|" + p.id]; n++;
-      } else if (a.type === "unassign") {
-        var it2 = instByKey(key, a.shift); if (!it2) return;
-        var L2 = w.locks[it2.key] || {};
-        if (L2[p.id] === "fixed") w.fixedSkip[it2.key + "|" + p.id] = true;
-        w.assign[it2.key] = (w.assign[it2.key] || []).filter(function (x) { return x !== p.id; }); delete L2[p.id]; n++;
-      }
+      } else if (a.type === "unassign") { removeFromShift(w, it, p.id); n++; }
+      else if (a.type === "unlock") { var L = w.locks[it.key] || {}; if (L[p.id] && L[p.id] !== "fixed") delete L[p.id]; n++; }
     });
-    markEdited(w);
-    if (regen) { generate(); return n + 1; }
+    if (setupChanged) markAllEdited(); else markEdited(w);
+    if (regen) { generate(); n++; }
+    if (pub) { w.status = "published"; w.dirty = false; w.pub = pubSnapshot(key); n++; }
     return n;
   }
 
@@ -1475,7 +1611,7 @@
       if (m.actions) {
         var d = m.actions.map(helperDescribe), okN = d.filter(function (x) { return x.ok; }).length; if (okN) d = d.filter(function (x) { return x.ok; });
         h += '<div class="prop"><b>' + (m.state === "done" ? "Applied" : m.state === "no" ? "Dismissed" : "Proposed changes") + "</b><ul>" +
-          d.map(function (x) { return "<li" + (x.ok ? "" : ' class="bad"') + ">" + esc(x.t) + "</li>"; }).join("") + "</ul>" +
+          d.map(function (x) { return "<li" + (x.ok ? (x.big ? ' style="color:var(--bad)"' : "") : ' class="bad"') + ">" + esc(x.t) + "</li>"; }).join("") + "</ul>" +
           (m.state === "open" ? '<div class="row"><button class="btn btn-sm btn-primary" data-act="helper-apply" data-i="' + i + '"' + (okN ? "" : " disabled") + ">" + icon("check") + 'Apply</button><button class="btn btn-sm" data-act="helper-dismiss" data-i="' + i + '">Not now</button></div>' : "") + "</div>";
       }
     });
@@ -1524,7 +1660,8 @@
     h += '<button class="btn" style="height:44px" data-act="au-google"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="#4285F4" d="M22.6 12.3c0-.8-.1-1.6-.2-2.3H12v4.4h5.9a5 5 0 0 1-2.2 3.3v2.7h3.6c2.1-1.9 3.3-4.8 3.3-8.1z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.7c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.1v2.8A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.8 14.2a6.6 6.6 0 0 1 0-4.3V7.1H2.1a11 11 0 0 0 0 9.9z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.2A11 11 0 0 0 2.1 7.1l3.7 2.8C6.7 7.3 9.1 5.4 12 5.4z"/></svg>Continue with Google</button>' +
       '<div class="row" style="gap:10px;color:var(--faint);font-size:12px"><span style="flex:1;height:1px;background:var(--line)"></span>or with email<span style="flex:1;height:1px;background:var(--line)"></span></div>' +
       '<label class="field"><span>Email</span><input class="input" id="au-email" type="email" autocomplete="email" value="' + esc(T.authEmail || "") + '"></label>' +
-      (T.authLink ? "" : '<label class="field"><span>Password</span><input class="input" id="au-pw" type="password" autocomplete="' + (up ? "new-password" : "current-password") + '" data-enter="au-email-go"></label>') + "</div>";
+      (T.authLink ? "" : '<label class="field"><span>Password</span><input class="input" id="au-pw" type="password" autocomplete="' + (up ? "new-password" : "current-password") + '" value="' + esc(T.authPw || "") + '" data-enter="au-email-go"></label>') +
+      (up ? '<p class="faint" style="font-size:12px;margin:0">By creating an account you agree to the <a href="../terms.html" target="_blank" rel="noopener">Terms</a> and <a href="../privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>' : "") + "</div>";
     h += '<div class="ob-foot">' + (T.authLink ? '<button class="btn btn-ghost btn-sm" data-act="au-mode" data-v="pw">Use a password instead</button>'
       : '<button class="btn btn-ghost btn-sm" data-act="au-mode" data-v="' + (up ? "in" : "up") + '">' + (up ? "I have an account" : "Create an account") + '</button><button class="btn btn-ghost btn-sm" data-act="au-mode" data-v="link">Email me a link</button>') +
       '<span class="spacer"></span><button class="btn btn-primary" data-act="au-email-go">' + (T.authLink ? "Send link" : up ? "Create account" : "Sign in") + "</button></div></div></div>";
@@ -1807,7 +1944,7 @@
     close: function () { if (T.modal && T.modal.type === "confirm") { T.modal = null; T.confirmFn = null; return; } dropBlankPerson(); T.drawer = null; T.modal = null; T.pop = null; },
     reload: function () { location.reload(); return false; },
     "au-google": function () { SACloud.signInGoogle().then(render); return false; },
-    "au-mode": function (el) { var v = el.dataset.v; T.authEmail = ($("#au-email") || {}).value || T.authEmail; T.authLink = v === "link"; if (v === "up") T.authMode = "signup"; if (v === "in") T.authMode = "signin"; SACloud.error = null; },
+    "au-mode": function (el) { var v = el.dataset.v; T.authEmail = ($("#au-email") || {}).value || T.authEmail; T.authPw = ($("#au-pw") || {}).value || T.authPw; T.authLink = v === "link"; if (v === "up") T.authMode = "signup"; if (v === "in") T.authMode = "signin"; SACloud.error = null; },
     "au-email-go": function () {
       var em = ($("#au-email") || {}).value || "", pw = ($("#au-pw") || {}).value || ""; T.authEmail = em;
       if (!em.trim()) { SACloud.error = "Enter your email address."; render(); return false; }
@@ -1860,8 +1997,10 @@
     "helper-dismiss": function (el) { var m = chat().msgs[+el.dataset.i]; if (m) m.state = "no"; },
     "helper-apply": function (el) {
       var m = chat().msgs[+el.dataset.i]; if (!m || m.state !== "open") return false;
-      var n = helperApply(m.actions); m.state = "done";
-      toast(n ? "Done. Changes applied to " + weekLabel(weekKey()) + "." : "Nothing to apply."); },
+      var go = function () { var n = helperApply(m.actions); m.state = "done"; toast(n ? "Done. " + plural(n, "change") + " applied." : "Nothing to apply."); };
+      var big = m.actions.map(helperDescribe).filter(function (d) { return d.ok && d.big; });
+      if (big.length) { askConfirm("Apply these changes?", big.map(function (d) { return d.t; }).join(". ") + ". These affect your whole team.", "Apply", go, big.some(function (d) { return /^(Remove|Delete)/.test(d.t); })); return false; }
+      go(); },
 
     // onboarding
     "ob-start": function () { S.setup = "wizard"; S.ui.wiz = 0; },
@@ -1982,7 +2121,10 @@
     "person-quick": function () {
       var inp = $("#quick-name"), name = inp && inp.value.trim();
       if (!name) { if (inp) inp.focus(); return false; }
-      newPerson(name); render(); var n = $("#quick-name"); if (n) n.focus(); return false;
+      var twin = S.people.some(function (x) { return String(x.name || "").toLowerCase() === name.toLowerCase(); });
+      newPerson(name); render(); var n = $("#quick-name"); if (n) n.focus();
+      if (twin) toast("There are now two people named " + name + ". Add a last initial so they're easy to tell apart.");
+      return false;
     },
     "person-del": function (el) {
       var pid = el.dataset.p || (T.drawer && T.drawer.p), p = person(pid);

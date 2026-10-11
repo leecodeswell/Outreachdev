@@ -283,7 +283,8 @@ service cloud.firestore {
               .hasOnly(['status', 'holdReason', 'files', 'ver', 'updatedAt', 'updatedBy', 'lastEvent', 'closedAt', 'closedBy'])
             && woStaffMove(org)
           ));
-        allow delete: if false;
+        // Owners and admins can delete a work order for good (numbers are never reused).
+        allow delete: if woAdmin(org) && woActive(org);
       }
 
       // Change history: add-only, by the person acting, stamped with the server time.
