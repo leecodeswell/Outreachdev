@@ -168,7 +168,7 @@
         var len = 0, prev = bez(p, 0);
         for (var k = 1; k <= 24; k++) { var q = bez(p, k / 24); len += Math.hypot(q.x - prev.x, q.y - prev.y); prev = q; }
         p.len = len;
-        var n = 3 + (rand() > 0.55 ? 1 : 0), up = tip.y < HC.y - 8 ? -1 : tip.y > HC.y + 8 ? 1 : 0;
+        var n = kind === "in" ? 1 + (rand() > 0.6 ? 1 : 0) : 5, up = tip.y < HC.y - 8 ? -1 : tip.y > HC.y + 8 ? 1 : 0;
         for (var i = 0; i < n; i++) {
           var side = up ? (i % 3 === 1 ? -up : up) : (i % 2 ? 1 : -1);
           var tw = { at: 0.16 + (i + 0.2 + rand() * 0.6) * (0.66 / n), side: side, ang: 0.5 + rand() * 0.42, L: twigLen * (0.6 + rand() * 0.75), ph: rand() * 6.283, leaves: [] };
@@ -321,7 +321,7 @@
       var gr = ctx.createLinearGradient(hubX, 0, leafX, 0);
       gr.addColorStop(0, "rgba(222,186,108,0.92)"); gr.addColorStop(0.55, "rgba(201,162,79,0.55)"); gr.addColorStop(1, "rgba(201,162,79,0.3)");
       ctx.fillStyle = gr;
-      ribbon(pts, 3.6, 1.1 + 2.5 * (1 - g));
+      if (p.kind === "out") ribbon(pts, 6, 2 + 3 * (1 - g)); else ribbon(pts, 2.6, 0.8 + 2 * (1 - g));
       // twigs and their leaves
       p.twigs.forEach(function (tw) {
         var k = clamp((g - tw.at) / 0.24, 0, 1);
