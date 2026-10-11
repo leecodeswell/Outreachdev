@@ -1,5 +1,5 @@
 /* =========================================================
-   THOMPSON TECHNOLOGIES: DESIGN SYSTEM (v5)
+   OUTREACHDEV BY LEE THOMPSON: DESIGN SYSTEM (v5)
    Look:    dark grayscale; purple only marks interactive things;
             gold for the hero tree and, very dark, the key section headings
    Spacing: 8-point scale only
@@ -889,3 +889,22 @@ button.chip-open:hover { border-color: var(--accent); }
 .legal b { color: var(--text); font-weight: 600; }
 .legal a { color: var(--accent); }
 .legal-meta { font-family: var(--mono); font-size: var(--fs-xs); color: var(--text-faint); }
+
+/* ---------- founder (about) ---------- */
+.founder {
+  display: grid; grid-template-columns: 200px 1fr; gap: var(--s-5); align-items: center;
+  margin: var(--s-5) 0 var(--s-6); padding: var(--s-5); max-width: 860px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.founder-photo {
+  display: block; width: 200px; height: 200px; border-radius: 50%; object-fit: cover;
+  border: 2px solid var(--tree-line); box-shadow: 0 0 0 6px rgba(201, 162, 79, 0.06), 0 0 40px -10px rgba(201, 162, 79, 0.35);
+}
+.founder-text h3 { margin: 0; }
+.founder-role { margin: 2px 0 var(--s-3); font-family: var(--mono); font-size: var(--fs-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tree); }
+.founder-text p:not(.founder-role) { color: var(--text-muted); margin: 0 0 var(--s-2); }
+.founder-text p:last-child { margin-bottom: 0; }
+@media (max-width: 640px) {
+  .founder { grid-template-columns: 1fr; justify-items: center; text-align: center; padding: var(--s-4); }
+  .founder-photo { width: 160px; height: 160px; }
+}

@@ -1,5 +1,5 @@
 /* =====================================================================
-   Outreachdev (by Thompson Technologies): shared site behavior
+   Outreachdev (by Lee Thompson): shared site behavior
    ===================================================================== */
 (function () {
   "use strict";
