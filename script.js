@@ -109,7 +109,7 @@
     var inputs = $$('[data-node="in"]', flow), outputs = $$('[data-node="out"]', flow), hub = $('[data-node="hub"]', flow);
     var labels = $$(".flow-label", flow);
     var paths = [], pulses = [], ripples = [], sparks = [], motes = [], falling = [];
-    var W = 0, H = 0, HC = { x: 0, y: 0, r: 1 }, twigLen = 40;
+    var maxReach = 1, W = 0, H = 0, HC = { x: 0, y: 0, r: 1 }, twigLen = 40;
     var growStart = -1, grown = false, visible = true, seen = false, clock = 0, liveAt = -1, nextFall = 4, spawnClock = 0.4;
     var ptr = { x: -9999, y: -9999, on: false };
     var GROW_MS = 1300, SPEED = 230;   // px per second for the light pulses
@@ -198,6 +198,7 @@
         members.forEach(function (nd, k) { var p = make(nd, "in", 300, fork); p.toLimb = limb; paths.push(p); });
       });
       outputs.forEach(function (nd, k) { paths.push(make(nd, "out", 300)); });
+      maxReach = 0; paths.forEach(function (p) { maxReach = Math.max(maxReach, (p.toLimb ? p.toLimb.len : 0) + p.len); });
       // motes: faint specks of light drifting up through the tree
       var count = Math.min(70, Math.round(W * H / 15000));
       if (motes.length !== count || !keep.length) {
@@ -441,8 +442,10 @@
         var el = ts - growStart, done = true;
         paths.forEach(function (p) {
           geom(p);
-          var g = clamp((el - p.delay) / GROW_MS, 0, 1);
-          if (g > 0) drawBranch(p, ease(g), t, 0);
+          // one continuous growth front moving out from the orb: a leaf's branch picks up exactly where its limb ends
+          var gx = clamp((el - 200) / 2200, 0, 1), reach = (gx < 0.5 ? 4 * gx * gx * gx : 1 - Math.pow(-2 * gx + 2, 3) / 2) * maxReach;
+          var start = p.toLimb ? p.toLimb.len : 0, g = gx >= 1 ? 1 : clamp((reach - start) / p.len, 0, 1);
+          if (g > 0) drawBranch(p, g, t, 0);
           if (g >= 1 && p.node && !p.node.classList.contains("is-born")) {
             p.node.classList.add("is-born"); lit(p.node);
             labels.forEach(function (l) { if (l.parentElement === p.node.parentElement) l.classList.add("is-born"); });
