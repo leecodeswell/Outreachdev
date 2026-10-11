@@ -397,10 +397,14 @@
     }
     function drawPulse(q) {
       // a comet: one smooth tapered streak that fades toward its tail, with a soft glow at the head
-      var p = q.p, N = 22, span = 110 / p.len, head = Math.min(q.t, 1), tail = Math.max(0, q.t - span), pts = [];
-      if (head > tail + 0.0005) {
-        for (var k = 0; k <= N; k++) pts.push(bez(p, tail + (head - tail) * k / N));
-        var a = pts[0], b = pts[N], fade = clamp((q.t - 1) / span, 0, 1);
+      // the tail is measured in pixels and can reach back past a fork onto the branch the light came from,
+      // so the streak runs through the fork as one piece
+      var p = q.p, N = 22, SPAN = 110, sh = Math.min(q.t, 1) * p.len, st = q.t * p.len - SPAN, pts = [];
+      if (!q.prev) st = Math.max(0, st);
+      function at(sx) { return sx >= 0 || !q.prev ? bez(p, clamp(sx / p.len, 0, 1)) : bez(q.prev, clamp(1 + sx / q.prev.len, 0, 1)); }
+      if (sh > st + 0.05) {
+        for (var k = 0; k <= N; k++) pts.push(at(st + (sh - st) * k / N));
+        var a = pts[0], b = pts[N], fade = clamp((q.t * p.len - p.len) / SPAN, 0, 1);
         var g = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
         g.addColorStop(0, "rgba(255,228,166,0)"); g.addColorStop(0.6, "rgba(255,226,160," + 0.35 * (1 - fade) + ")"); g.addColorStop(1, "rgba(255,240,205," + 0.95 * (1 - fade) + ")");
         ctx.fillStyle = g; ribbon(pts, 0.2, 2.6);
@@ -491,7 +495,7 @@
         drawPulse(q);
         if (q.t >= 1 && !q.done) {
           q.done = true;
-          if (q.p.toLimb) pulses.push({ p: q.p.toLimb, t: 0, wait: 0 });   // carry on down the limb
+          if (q.p.toLimb) { pulses.push({ p: q.p.toLimb, t: (q.t - 1) * q.p.len / q.p.toLimb.len, wait: 0, prev: q.p }); pulses.splice(i, 1); continue; }   // carry on down the limb, same streak
           else if (q.p.kind === "in") { hubPulse(); spawnOut(null, 0.18); }
           else { lit(q.p.node); var e = q.p.p3; burst(e.x, e.y); }
         }
