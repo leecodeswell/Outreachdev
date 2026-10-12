@@ -107,6 +107,7 @@
     // clickable rows, cards and headers: reachable with Tab, and Enter/Space work like a click
     root.querySelectorAll("[data-act]").forEach(function (el) {
       if (/^(BUTTON|A|INPUT|SELECT|TEXTAREA|LABEL|SUMMARY|OPTION)$/.test(el.tagName) || el.hasAttribute("tabindex")) return;
+      if (/^close-(self|pop)$/.test(el.dataset.act) || el.dataset.act === "close" && !el.textContent.trim()) return;   // backdrops: Escape closes them
       el.tabIndex = 0;
       if (!/^(TR|TH|TD)$/.test(el.tagName)) el.setAttribute("role", "button");
     });
