@@ -201,19 +201,19 @@ a { color: var(--accent); text-decoration: none; }
 .badge-muted { color: var(--text-muted); border-color: var(--line); }
 
 /* ---------- Hero ---------- */
-.hero { padding: var(--s-8) 0 var(--s-6); text-align: center; }
+.hero { padding: var(--s-6) 0 var(--s-4); text-align: center; }
 .hero-copy { max-width: 1000px; margin: 0 auto; }
 .hero-copy .eyebrow::after { content: ""; width: 24px; height: 1px; background: var(--accent-line); }
 .hero h1 { margin-bottom: var(--s-3); }
-.hero .lead { max-width: 600px; margin: 0 auto var(--s-5); }
+.hero .lead { max-width: 600px; margin: 0 auto var(--s-4); }
 .hero-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-2); }
 
 /* Tree: what you have branches into one tailored system, which branches into results.
    Full-bleed: it stretches across the whole screen, not just the content column. */
 .flow {
-  position: relative; width: 100vw; margin: var(--s-6) 0 0 calc(50% - 50vw);
+  position: relative; width: 100vw; margin: var(--s-3) 0 0 calc(50% - 50vw);
   display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--s-8);
-  padding: var(--s-3) clamp(16px, 4vw, 72px);
+  padding: var(--s-1) clamp(16px, 4vw, 72px);
 }
 .flow::before { /* faint purple light behind the trunk, no box */
   content: ""; position: absolute; left: 50%; top: 50%; width: min(1100px, 90vw); height: 420px; transform: translate(-50%, -50%);
@@ -281,23 +281,22 @@ a { color: var(--accent); text-decoration: none; }
 .node.is-lit .leaf-body::after { opacity: 1; }
 
 .hub {
-  /* a wizard's orb: a glass sphere with a warm gold glow inside and a soft halo, perfectly still */
-  position: relative; width: 184px; height: 184px; border-radius: 50%;
+  /* the core is drawn on the canvas (a gold gyroscope around the logo); this box only places it,
+     catches hover and clicks, and shows a plain logo if the script never runs */
+  position: relative; width: 212px; height: 212px; border-radius: 50%;
   display: grid; place-items: center;
-  background:
-    radial-gradient(circle at 32% 24%, rgba(255, 246, 220, 0.42), rgba(255, 246, 220, 0) 22%),
-    radial-gradient(circle at 50% 56%, rgba(226, 184, 92, 0.34), rgba(226, 184, 92, 0) 62%),
-    radial-gradient(circle at 50% 46%, #3a2f1a, #15110a 62%, #0a0907 100%);
-  box-shadow:
-    inset 0 0 26px 2px rgba(240, 200, 110, 0.38), inset 0 -18px 36px rgba(0, 0, 0, 0.5),
-    0 0 36px 2px rgba(226, 184, 92, 0.38), 0 0 110px 8px rgba(201, 162, 79, 0.2), 0 26px 60px -20px rgba(0, 0, 0, 0.8);
   transition: opacity 600ms var(--ease), transform 600ms var(--ease);
 }
-.hub::after { /* faint glass highlight along the lower edge */
-  content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
-  background: radial-gradient(circle at 70% 82%, rgba(255, 224, 150, 0.16), rgba(255, 224, 150, 0) 34%);
+.hub svg { width: 96px; height: 96px; position: relative; z-index: 1; filter: drop-shadow(0 0 14px rgba(255, 214, 130, 0.45)); }
+.flow.has-core .hub { cursor: pointer; }
+/* the core's halo: sits under the canvas, its brightness set by the script (breathing, hover, flashes) */
+.flow-hub { z-index: 0; }
+.flow.has-core .hub::before {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 260%; height: 260%; transform: translate(-50%, -50%);
+  border-radius: 50%; pointer-events: none; opacity: calc(var(--core-glow, 0) * 0.85);
+  background: radial-gradient(closest-side, rgba(255, 234, 186, 0.62), rgba(238, 200, 124, 0.32) 18%, rgba(201, 162, 79, 0.12) 42%, rgba(201, 162, 79, 0.04) 66%, rgba(201, 162, 79, 0));
 }
-.hub svg { width: 112px; height: 112px; position: relative; z-index: 1; filter: drop-shadow(0 0 8px rgba(255, 214, 130, 0.5)) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.5)); }
+.flow.has-core .hub svg { visibility: hidden; }
 .hub-label {
   position: absolute; top: calc(100% + 50px); left: 50%; transform: translateX(-50%); white-space: nowrap;
   font-family: var(--mono); font-size: var(--fs-xs); font-weight: 600; color: var(--tree);
@@ -589,8 +588,8 @@ button.chip-open:hover { border-color: var(--accent); }
 @media (max-width: 1080px) {
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
   .flow { gap: var(--s-4); }
-  .hub { width: 144px; height: 144px; }
-  .hub svg { width: 88px; height: 88px; }
+  .hub { width: 168px; height: 168px; }
+  .hub svg { width: 76px; height: 76px; }
   .flow-col .node { margin-left: 0 !important; margin-right: 0 !important; }
   .flow-inputs .node:nth-of-type(odd), .flow-outputs .node:nth-of-type(even) { margin-left: 0; }
   .sched-layout { grid-template-columns: 1fr; }
@@ -619,13 +618,17 @@ button.chip-open:hover { border-color: var(--accent); }
   :root { --fs-2xl: 2.5rem; --fs-xl: 1.75rem; --fs-lg: 1.125rem; }
   .container { padding: 0 var(--s-2); }
   .section { padding: var(--s-8) 0; }
-  .hero { padding: var(--s-8) 0 var(--s-6); }
+  .hero { padding: var(--s-5) 0 var(--s-4); }
   .hero-actions .btn { width: 100%; }
   .mission-grid { grid-template-columns: 1fr; gap: var(--s-1); }
   .mission-text { font-size: 1.375rem; }
 
-  /* Phones: no tree for now. The mission statement types itself out instead. */
-  .flow { display: none; }
+  /* Phones: no tree, just the core, with loose specks flowing in and tidy lanes flowing out.
+     The mission statement types itself out below. */
+  .flow { display: grid; grid-template-columns: 1fr; height: 250px; margin-top: 0; padding: 0; justify-items: center; }
+  .flow-inputs, .flow-outputs { display: none; }
+  .hub { width: 156px; height: 156px; }
+  .hub-label { top: calc(100% + 22px); }
   .mission { padding: var(--s-6) 0; }
   .mission-text { font-family: var(--mono); font-weight: 500; letter-spacing: -0.01em; font-size: 1.125rem; line-height: 1.6; }
   .mission-text::before { content: "> "; color: var(--accent); }

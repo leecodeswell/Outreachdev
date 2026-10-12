@@ -55,7 +55,7 @@
 
   /* =====================================================================
      PHONES: the mission statement types itself out like code
-     (the tree is hidden at this size; desktop is untouched)
+     (at this size the hero shows only the core; desktop is untouched)
      ===================================================================== */
   (function typeMission() {
     var el = $(".mission-text");
@@ -109,6 +109,7 @@
     var inputs = $$('[data-node="in"]', flow), outputs = $$('[data-node="out"]', flow), hub = $('[data-node="hub"]', flow);
     var labels = $$(".flow-label", flow);
     var paths = [], pulses = [], ripples = [], sparks = [], motes = [], falling = [];
+    var compact = false;   // phones: just the core, with the specks flowing through it
     var sideEnd = { in: 0, out: 1 }, maxReach = 1, W = 0, H = 0, HC = { x: 0, y: 0, r: 1 }, twigLen = 40;
     var growStart = -1, grown = false, visible = true, seen = false, clock = 0, liveAt = -1, nextFall = 4, spawnClock = 0.4;
     var ptr = { x: -9999, y: -9999, on: false };
@@ -183,8 +184,9 @@
         return p;
       }
       var keep = paths; paths = []; pulses = []; sparks = []; ripples = [];
+      compact = !inputs.length || getComputedStyle(inputs[0].parentElement).display === "none";
       // the inputs gather onto three limbs (top, middle, bottom) that run into the orb
-      var groups = [[0, 1], [2, 3], [4, 5]], maxTip = 0;
+      var groups = compact ? [] : [[0, 1], [2, 3], [4, 5]], maxTip = 0;
       inputs.forEach(function (nd) { var r = nd.querySelector(".stem").getBoundingClientRect(); maxTip = Math.max(maxTip, r.right - base.left); });
       var forkX = maxTip + (HC.x - HC.r - maxTip) * 0.42;
       groups.forEach(function (gr, gi) {
@@ -197,17 +199,54 @@
         paths.push(limb);
         members.forEach(function (nd, k) { var p = make(nd, "in", 300, fork); p.toLimb = limb; paths.push(p); });
       });
-      outputs.forEach(function (nd, k) { paths.push(make(nd, "out", 300)); });
+      if (!compact) outputs.forEach(function (nd, k) { paths.push(make(nd, "out", 300)); });
       sideEnd = { in: W, out: 0 };
       paths.forEach(function (p) { if (!p.node) return; if (p.kind === "in") sideEnd.in = Math.min(sideEnd.in, p.tip.x); else sideEnd.out = Math.max(sideEnd.out, p.tip.x); });
       maxReach = 0; paths.forEach(function (p) { maxReach = Math.max(maxReach, (p.toLimb ? p.toLimb.len : 0) + p.len); });
-      // motes: faint specks of light drifting up through the tree
-      var count = Math.min(70, Math.round(W * H / 15000));
+      // motes: on the left, loose specks drift every which way (the mess); the core takes them in and
+      // sends them out on the right as tidy dashes running in straight lanes (the order)
+      var count = compact ? Math.round(W / 9) : Math.min(76, Math.round(W * H / 12500));
       if (motes.length !== count || !keep.length) {
         motes = [];
-        for (var m = 0; m < count; m++) motes.push({ x: Math.random() * W, y: Math.random() * H, r: 0.4 + Math.random() * 1.3, vy: -(3 + Math.random() * 9), vx: (Math.random() - 0.5) * 4, ph: Math.random() * 6.283, tw: 0.6 + Math.random() * 1.6 });
+        for (var m = 0; m < count; m++) { var mo = newMote(Math.random() * W, Math.random() * H); if (mo.x > HC.x) toLane(mo, mo.x); motes.push(mo); }
       }
       return true;
+    }
+
+    function newMote(x, y) {
+      return { x: x, y: y, r: 0.4 + Math.random() * 1.3, vy: -(3 + Math.random() * 9), vx: 4 + Math.random() * 6, ph: Math.random() * 6.283, tw: 0.6 + Math.random() * 1.6, ord: false };
+    }
+    function toLane(m, x) {
+      var lanes = Math.max(3, Math.floor(H / 26)), k = Math.floor(Math.random() * lanes);
+      m.ord = true; m.x = x; m.lane = H * (k + 0.5) / lanes; m.y = HC.y + (m.lane - HC.y) * 0.25; m.v = 26 + Math.random() * 26; m.len = 5 + Math.random() * 9;
+    }
+    function moveMotes(t, dt, w, alpha) {
+      var Rb = HC.r;
+      motes.forEach(function (m) {
+        var a = (0.05 + 0.16 * m.r / 1.7) * alpha;
+        if (!m.ord) {
+          m.x += (m.vx * (compact ? 2.4 : 1) + Math.sin(t * m.tw + m.ph) * 9 + w * 5) * dt; m.y += (m.vy + Math.cos(t * m.tw * 1.3 + m.ph) * 6) * dt;
+          if (m.y < -12) { m.y = H + 12; m.x = Math.random() * (HC.x - Rb); }
+          if (m.y > H + 12) m.y = -12;
+          if (m.x < -12) m.x = HC.x - Rb;
+          var dx = m.x - HC.x, dy = m.y - HC.y, d = Math.hypot(dx, dy);
+          if (d < Rb * 2.2) { m.x -= dx / d * 60 * dt * (1 - d / (Rb * 2.2)); m.y -= dy / d * 60 * dt * (1 - d / (Rb * 2.2)); }   // pulled in
+          if (d < Rb * 0.8 || m.x > HC.x) { toLane(m, HC.x + Rb * 0.9); return; }
+          a *= 0.55 + 0.45 * Math.sin(t * m.tw + m.ph);
+          if (m.r > 1.05) glow(m.x, m.y, m.r * 7, a * 1.4);
+          else { ctx.fillStyle = "rgba(240,214,160," + a + ")"; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, 6.283); ctx.fill(); }
+        } else {
+          m.x += m.v * dt; m.y += (m.lane - m.y) * Math.min(1, dt * 1.4);
+          if (m.x > W + 20) { if (Math.random() < 0.5) { m.ord = false; m.x = Math.random() * (HC.x - Rb * 1.5); m.y = H + 10; } else toLane(m, HC.x + Rb * 0.9); return; }
+          var fadeIn = clamp((m.x - HC.x - Rb) / 60, 0, 1), fadeOut = clamp((W - m.x) / 120, 0, 1);
+          a = (0.1 + 0.2 * m.r / 1.7) * alpha * fadeIn * fadeOut;
+          ctx.lineWidth = 0.9 + m.r * 0.5; ctx.lineCap = "round";
+          ctx.strokeStyle = "rgba(255,226,160," + a * 0.35 + ")";
+          ctx.beginPath(); ctx.moveTo(m.x - m.len, m.y); ctx.lineTo(m.x - m.len * 0.45, m.y); ctx.stroke();
+          ctx.strokeStyle = "rgba(255,236,190," + a + ")";
+          ctx.beginPath(); ctx.moveTo(m.x - m.len * 0.45, m.y); ctx.lineTo(m.x, m.y); ctx.stroke();
+        }
+      });
     }
 
     // where the branch runs right now (its leaf end moves with the leaf)
@@ -372,15 +411,167 @@
       if (g < 1) { var tip = pts[pts.length - 1]; glow(tip.x, tip.y, 14, 0.9); }
     }
 
-    // The ring around the logo: a fine bezel of ticks with a slow sweep of light, faint guide circles,
-    // and four tapered comets orbiting at two radii. Brightens for a moment when a pulse arrives.
-    var hubFlash = 0;
-    function arcPts(r, a0, a1, n) { var out = []; for (var k = 0; k <= n; k++) { var aa = a0 + (a1 - a0) * k / n; out.push({ x: HC.x + Math.cos(aa) * r, y: HC.y + Math.sin(aa) * r }); } return out; }
-    function drawHub() {}   // the orb is plain CSS now: no rings, ticks or comets
+    /* ---------- the core: a gold gyroscope ----------
+       Three fine rings turn in 3D around a glowing nucleus and the logo. The back half of each ring
+       passes behind the logo and the front half in front of it. A precision bezel of ticks marks where
+       the branches plug in. It tilts toward the cursor, spins up on hover, and flares when light arrives. */
+    var markPath = null;
+    (function () { var el = document.querySelector("#o-mark path"); if (el && window.Path2D) markPath = new Path2D(el.getAttribute("d")); })();
+    var core = { tx: 0.34, ty: 0, flash: 0, hover: 0, hoverT: 0, waves: [], intro: 1 };
+    var RINGS = [
+      { r: 1.0,  inc: 0,     node: 0,   rate: 0,     ph: 0, bs: 0.42,  bp: 0, beads: [0, 3.4] },
+      { r: 0.86, inc: 1.08,  node: 0.5, rate: 0.21,  ph: 0, bs: -0.62, bp: 0, beads: [1.3] },
+      { r: 0.73, inc: -1.16, node: 2.4, rate: -0.15, ph: 0, bs: 0.8,   bp: 0, beads: [4.2] }
+    ];
+    function coreR() { return HC.r * 0.8; }
+    // a point on a ring, turned into place and projected with a little perspective
+    function ringPt(rg, th) {
+      var x = Math.cos(th) * rg.r, y = 0, z = Math.sin(th) * rg.r, c, s, nx, ny, nz;
+      c = Math.cos(rg.inc); s = Math.sin(rg.inc); ny = y * c - z * s; nz = y * s + z * c; y = ny; z = nz;
+      var om = rg.node + rg.ph; c = Math.cos(om); s = Math.sin(om); nx = x * c + z * s; nz = -x * s + z * c; x = nx; z = nz;
+      c = Math.cos(core.tx); s = Math.sin(core.tx); ny = y * c - z * s; nz = y * s + z * c; y = ny; z = nz;
+      c = Math.cos(core.ty); s = Math.sin(core.ty); nx = x * c + z * s; nz = -x * s + z * c; x = nx; z = nz;
+      var R = coreR(), k = 4 / (4 - z);
+      return { x: HC.x + x * k * R, y: HC.y - y * k * R, z: z };
+    }
+    var N_SEG = 120;
+    function drawRings(front, vis) {
+      ctx.lineCap = "round"; ctx.lineJoin = "round";
+      RINGS.forEach(function (rg, j) {
+        var f = clamp(vis * 1.5 - j * 0.25, 0, 1);
+        if (!f) return;
+        var pts = [], n = Math.ceil(N_SEG * f);
+        for (var i = 0; i <= n; i++) pts.push(ringPt(rg, -1.2 + j + (i / N_SEG) * 6.2832));
+        // stroke unbroken runs of similar depth, so the ring reads as one smooth line (no beading at the joins)
+        var i0 = 0;
+        function run(i1, band) {
+          if (i1 <= i0) return;
+          var d = band / 10, al = (0.16 + 0.72 * d) * (0.85 + 0.15 * core.hover + 0.4 * core.flash);
+          ctx.beginPath(); ctx.moveTo(pts[i0].x, pts[i0].y);
+          for (var k = i0 + 1; k <= i1; k++) ctx.lineTo(pts[k].x, pts[k].y);
+          ctx.strokeStyle = "rgba(226,184,96," + (al * 0.16) + ")"; ctx.lineWidth = 4.5; ctx.stroke();
+          ctx.strokeStyle = "rgba(255,226,160," + al + ")"; ctx.lineWidth = 0.7 + 1.4 * d; ctx.stroke();
+        }
+        var band = -1, side = null;
+        for (i = 0; i < n; i++) {
+          var zm = (pts[i].z + pts[i + 1].z) / 2, sd = zm >= 0, bd = Math.round((zm + 1) * 5);
+          if (bd !== band || sd !== side) { if (side === front) run(i, band); i0 = i; band = bd; side = sd; }
+        }
+        if (side === front) run(n, band);
+        if (f < 1) { var h = pts[n]; if ((h.z >= 0) === front) glow(h.x, h.y, 16, 0.9); return; }
+        // satellites riding the ring, each with a short fading trail
+        ctx.lineCap = "round";
+        rg.beads.forEach(function (b0) {
+          var th = b0 + rg.bp, hd = ringPt(rg, th);
+          if ((hd.z >= 0) !== front) return;
+          var d = (hd.z + 1) / 2, dir = rg.bs >= 0 ? -1 : 1, prev = hd;
+          for (var k = 1; k <= 12; k++) {
+            var q = ringPt(rg, th + dir * k * 0.045);
+            ctx.beginPath(); ctx.moveTo(prev.x, prev.y); ctx.lineTo(q.x, q.y);
+            ctx.strokeStyle = "rgba(255,238,200," + ((1 - k / 12) * (0.35 + 0.6 * d)) + ")"; ctx.lineWidth = 1.2 + 1.2 * d * (1 - k / 12); ctx.stroke();
+            prev = q;
+          }
+          glow(hd.x, hd.y, 9 + 9 * d, 0.45 + 0.5 * d);
+          ctx.fillStyle = "rgba(255,250,236," + (0.6 + 0.4 * d) + ")"; ctx.beginPath(); ctx.arc(hd.x, hd.y, 0.9 + 0.9 * d, 0, 6.283); ctx.fill();
+        });
+      });
+    }
+    function drawNucleus(t, vis) {
+      var R = coreR(), br = (0.88 + 0.12 * Math.sin(t * 1.7)) * vis + core.flash * 0.7 + core.hover * 0.22;
+      // the wide halo is a CSS layer under the canvas (cheap to fade); only the hot center is drawn here
+      var gl = clamp(br, 0, 1.6).toFixed(3);
+      if (gl !== core.gl) { core.gl = gl; hub.style.setProperty("--core-glow", gl); }
+      ctx.globalCompositeOperation = "lighter";
+      glow(HC.x, HC.y, R * 0.75, 0.32 * br);
+      ctx.globalCompositeOperation = "source-over";
+      var img = logoImage(R * 0.95);
+      if (!img || vis <= 0) return;
+      // the logo in gold, turned a touch toward the cursor
+      var sz = R * 0.95 * (0.9 + 0.1 * ease(vis)), sx = Math.cos(core.ty * 0.9), sy = Math.cos((core.tx - 0.34) * 0.9), pad = img.pad * sz;
+      ctx.globalAlpha = clamp(vis * 1.4, 0, 1);
+      ctx.drawImage(img, HC.x - (sz / 2 + pad) * sx, HC.y - (sz / 2 + pad) * sy, (sz + pad * 2) * sx, (sz + pad * 2) * sy);
+      ctx.globalAlpha = 1;
+      if (core.flash > 0.02) { ctx.globalCompositeOperation = "lighter"; glow(HC.x, HC.y, R * 0.9, core.flash * 0.35); ctx.globalCompositeOperation = "source-over"; }
+    }
+    var logoCache = null;
+    function logoImage(size) {
+      if (!markPath) return null;
+      var px = Math.round(size * Math.min(3, Math.max(2, window.devicePixelRatio || 1)));
+      if (logoCache && logoCache.px === px) return logoCache;
+      var pad = 0.35, c = document.createElement("canvas"), g = c.getContext("2d"), k = px / 137.8;
+      c.width = c.height = Math.round(px * (1 + pad * 2));
+      g.translate(c.width / 2, c.height / 2); g.scale(k, k); g.translate(-100.8, -95.4);
+      var gr = g.createLinearGradient(40, 28, 150, 164);
+      gr.addColorStop(0, "#FFF6DC"); gr.addColorStop(0.42, "#F2CF86"); gr.addColorStop(1, "#A97C30");
+      g.fillStyle = gr;
+      g.shadowColor = "rgba(20,12,0,0.85)"; g.shadowBlur = px * 0.06; g.shadowOffsetY = px * 0.012; g.fill(markPath);
+      g.shadowColor = "rgba(255,206,120,0.6)"; g.shadowBlur = px * 0.16; g.shadowOffsetY = 0; g.fill(markPath);
+      c.px = px; c.pad = pad; logoCache = c;
+      return c;
+    }
+    // the bezel: a hairline circle of fine ticks with a slow sweep of light, and a glowing port for every branch
+    function drawBezel(t, vis) {
+      var Rb = HC.r, sweep = t * 0.55, n = 120;
+      ctx.lineCap = "butt";
+      ctx.strokeStyle = "rgba(226,190,112," + 0.14 * vis + ")"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(HC.x, HC.y, Rb, -1.5708, -1.5708 + 6.2832 * vis); ctx.stroke();
+      var LV = 8, bins = [];
+      for (var b = 0; b < LV; b++) bins.push([]);
+      for (var i = 0; i < n * vis; i++) {
+        var a = -1.5708 + i / n * 6.2832, da = Math.atan2(Math.sin(a - sweep), Math.cos(a - sweep));
+        var lit = Math.exp(-da * da / 0.12) + Math.exp(-Math.pow(Math.atan2(Math.sin(a - sweep - 3.1416), Math.cos(a - sweep - 3.1416)), 2) / 0.12) * 0.5;
+        var al = (i % 10 === 0 ? 0.3 : 0.14) + 0.6 * lit + 0.3 * core.flash;
+        bins[Math.min(LV - 1, Math.round(al * (LV - 1)))].push(i);
+      }
+      bins.forEach(function (list, b) {
+        if (!list.length) return;
+        ctx.strokeStyle = "rgba(240,206,134," + (b / (LV - 1)) * vis + ")";
+        ctx.beginPath();
+        list.forEach(function (i) {
+          var a = -1.5708 + i / n * 6.2832, c = Math.cos(a), s = Math.sin(a), L = i % 10 === 0 ? 7 : 3.5;
+          ctx.moveTo(HC.x + c * (Rb - 3), HC.y + s * (Rb - 3)); ctx.lineTo(HC.x + c * (Rb - 3 - L), HC.y + s * (Rb - 3 - L));
+        });
+        ctx.stroke();
+      });
+      if (vis < 1) return;
+      ctx.globalCompositeOperation = "lighter";
+      paths.forEach(function (p) {
+        if (p.toLimb) return;
+        glow(p.hubPt.x, p.hubPt.y, 10 + 10 * p.port, 0.4 + 0.6 * p.port);
+      });
+      core.waves.forEach(function (w) {
+        var k = w.age / w.life;
+        ctx.strokeStyle = "rgba(255,226,160," + (1 - k) * 0.45 + ")"; ctx.lineWidth = 1.4 * (1 - k) + 0.3;
+        ctx.beginPath(); ctx.arc(HC.x, HC.y, Rb * (1 + ease(k) * 0.7), 0, 6.2832); ctx.stroke();
+      });
+      ctx.globalCompositeOperation = "source-over";
+    }
+    function stepCore(t, dt) {
+      var bx = 0.34 + Math.sin(t * 0.31) * 0.05, by = Math.sin(t * 0.23) * 0.16;
+      if (ptr.on) { bx = 0.34 + clamp((ptr.y - HC.y) / H, -0.6, 0.6) * 0.55; by = clamp((ptr.x - HC.x) / W, -0.6, 0.6) * 1.0; }
+      var f = Math.min(1, dt * 2.6);
+      core.tx += (bx - core.tx) * f; core.ty += (by - core.ty) * f;
+      core.hover += (core.hoverT - core.hover) * Math.min(1, dt * 5);
+      core.flash = Math.max(0, core.flash - dt * 1.6);
+      paths.forEach(function (p) { if (p.port) p.port = Math.max(0, p.port - dt * 1.8); });
+      var boost = 1 + core.hover * 1.6 + core.flash * 2.2;
+      RINGS.forEach(function (rg) { rg.ph += rg.rate * dt * boost; rg.bp += rg.bs * dt * boost; });
+      for (var i = core.waves.length - 1; i >= 0; i--) { core.waves[i].age += dt; if (core.waves[i].age > core.waves[i].life) core.waves.splice(i, 1); }
+    }
+    function drawCore(t, vis) {
+      drawRings(false, vis);
+      drawNucleus(t, clamp((vis - 0.35) / 0.65, 0, 1));
+      drawRings(true, vis);
+      drawBezel(t, vis);
+    }
+    function hubPulse(p) {
+      core.flash = Math.min(1, core.flash + 0.7);
+      core.waves.push({ age: 0, life: 1.3 });
+      if (p) p.port = 1;
+    }
 
     /* ---------- light pulses ---------- */
     function lit(node) { node.classList.add("is-lit"); setTimeout(function () { node.classList.remove("is-lit"); }, 900); }
-    function hubPulse() {}
     function spawnIn(p) {
       var ins = paths.filter(function (x) { return x.kind === "in" && x.node; });
       p = p || ins[Math.floor(Math.random() * ins.length)];
@@ -390,7 +581,9 @@
     function spawnOut(p, wait) {
       var outs = paths.filter(function (x) { return x.kind === "out"; });
       p = p || outs[Math.floor(Math.random() * outs.length)];
-      if (p) pulses.push({ p: p, t: 0, wait: wait || 0 });
+      if (!p) return;
+      pulses.push({ p: p, t: 0, wait: wait || 0 });
+      if (!wait) p.port = 1;
     }
     function burst(x, y) {
       for (var i = 0; i < 9; i++) { var a = Math.random() * 6.283, v = 18 + Math.random() * 38; sparks.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, age: 0, life: 0.5 + Math.random() * 0.5 }); }
@@ -433,24 +626,19 @@
 
       // motes, behind everything
       ctx.globalCompositeOperation = "lighter";
-      motes.forEach(function (m) {
-        m.x += (m.vx + w * 5) * dt; m.y += m.vy * dt;
-        if (m.y < -12) { m.y = H + 12; m.x = Math.random() * W; }
-        if (m.x < -12) m.x = W + 12; else if (m.x > W + 12) m.x = -12;
-        var fall = 1 - Math.min(1, Math.abs(m.x - W / 2) / (W * 0.62)) * 0.55;
-        var a = (0.05 + 0.16 * m.r / 1.7) * (0.55 + 0.45 * Math.sin(t * m.tw + m.ph)) * fall * (grown ? 1 : 0.4);
-        if (m.r > 1.05) glow(m.x, m.y, m.r * 7, a * 1.4);
-        else { ctx.fillStyle = "rgba(240,214,160," + a + ")"; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, 6.283); ctx.fill(); }
-      });
+      moveMotes(t, dt, w, (grown ? 1 : 0.4) * (compact ? 1.7 : 1));
       ctx.globalCompositeOperation = "source-over";
+      stepCore(t, dt);
 
       if (!grown) {
         if (growStart < 0) { if (!seen) return; growStart = ts + 150; }
-        var el = ts - growStart, done = true;
+        var el = ts - growStart, done = true, cv = clamp(el / 1300, 0, 1);
+        // the core assembles first: rings draw themselves in, then the nucleus lights
+        if (cv >= 0.62 && !core.lit) { core.lit = true; hubPulse(); }
         paths.forEach(function (p) {
           geom(p);
-          // one continuous growth front moving out from the orb: a leaf's branch picks up exactly where its limb ends
-          var gx = clamp((el - 200) / 2200, 0, 1), reach = (gx < 0.5 ? 4 * gx * gx * gx : 1 - Math.pow(-2 * gx + 2, 3) / 2) * maxReach;
+          // one continuous growth front moving out from the core: a leaf's branch picks up exactly where its limb ends
+          var gx = clamp((el - 1000) / 2200, 0, 1), reach = (gx < 0.5 ? 4 * gx * gx * gx : 1 - Math.pow(-2 * gx + 2, 3) / 2) * maxReach;
           var start = p.toLimb ? p.toLimb.len : 0, g = gx >= 1 ? 1 : clamp((reach - start) / p.len, 0, 1);
           if (g > 0) drawBranch(p, g, t, 0);
           if (g >= 1 && p.node && !p.node.classList.contains("is-born")) {
@@ -459,7 +647,8 @@
           }
           if (g < 1) done = false;
         });
-        if (done) { bornAll(); spawnIn(); }
+        drawCore(t, ease(cv));
+        if (done && cv >= 1) { bornAll(); spawnIn(); }
         return;
       }
 
@@ -469,7 +658,7 @@
         p.twigs.forEach(function (tw) { tw.leaves.forEach(function (lf) { if (lf.sc < 1) lf.sc = Math.min(1, lf.sc + dt / 1.6); }); });
         drawBranch(p, 1, t, amp);
       });
-      drawHub(t, amp, dt);
+      drawCore(t, 1);
 
       // falling leaves
       nextFall -= dt;
@@ -486,17 +675,19 @@
 
       // light: new pulse about once a second
       spawnClock -= dt;
-      if (spawnClock <= 0) { spawnIn(); spawnClock = 0.9 + Math.random() * 0.5; }
+      if (spawnClock <= 0) {
+        if (compact) { hubPulse(); spawnClock = 2.6 + Math.random() * 1.4; } else { spawnIn(); spawnClock = 0.9 + Math.random() * 0.5; }
+      }
       ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
       for (var i = pulses.length - 1; i >= 0; i--) {
         var q = pulses[i];
-        if (q.wait > 0) { q.wait -= dt; continue; }
+        if (q.wait > 0) { q.wait -= dt; if (q.wait <= 0) q.p.port = 1; continue; }
         q.t += SPEED / q.p.len * dt;
         drawPulse(q);
         if (q.t >= 1 && !q.done) {
           q.done = true;
           if (q.p.toLimb) { pulses.push({ p: q.p.toLimb, t: (q.t - 1) * q.p.len / q.p.toLimb.len, wait: 0, prev: q.p }); pulses.splice(i, 1); continue; }   // carry on down the limb, same streak
-          else if (q.p.kind === "in") { hubPulse(); spawnOut(null, 0.18); }
+          else if (q.p.kind === "in") { hubPulse(q.p); spawnOut(null, 0.18); }
           else { lit(q.p.node); var e = q.p.p3; burst(e.x, e.y); }
         }
         if (q.t > 1 + 115 / q.p.len) pulses.splice(i, 1);
@@ -519,6 +710,7 @@
     function drawStatic() {
       ctx.clearRect(0, 0, W, H);
       paths.forEach(function (p) { geom(p); drawBranch(p, 1, 0, 0); });
+      drawCore(0, 1);
     }
 
     /* ---------- pointer: leaves lean away, hovering a leaf sends light ---------- */
@@ -533,8 +725,17 @@
       node.addEventListener("mouseenter", function () { var p = paths.filter(function (x) { return x.node === node; })[0]; if (p) hoverSend(p); });
     });
 
+    // the core: spins up under the cursor; a click sends light out to both results
+    hub.addEventListener("mouseenter", function () { core.hoverT = 1; });
+    hub.addEventListener("mouseleave", function () { core.hoverT = 0; });
+    hub.addEventListener("click", function () {
+      if (!grown || reduceMotion) return;
+      hubPulse(); paths.forEach(function (p) { if (p.kind === "out") spawnOut(p); });
+    });
+
     function start() {
       if (!build()) return false;
+      flow.classList.add("has-core");
       if (reduceMotion) { bornAll(); drawStatic(); return true; }
       flow.classList.add("is-growing");
       requestAnimationFrame(frame);
