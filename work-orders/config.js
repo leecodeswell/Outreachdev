@@ -1,3 +1,10 @@
+/* Never run inside another site's frame (stops "clickjacking", where a page hides this app
+   under fake buttons to trick clicks). If framed, break out, and stay hidden if we can't. */
+if (window.top !== window.self) {
+  try { window.top.location.replace(window.location.href); } catch (e) { }
+  document.documentElement.style.visibility = "hidden";
+}
+
 /* Firebase connection for Work Order Manager.
    Same Firebase project as Scheduling Agent; the two apps keep their data apart
    (this one uses the wo_ collections). These values identify the project and are

@@ -17,7 +17,7 @@
   --line:        #26262C;                    /* neutral dividers */
   --text:        #EDEDF0;
   --text-muted:  #A3A3AD;
-  --text-faint:  #6E6E78;
+  --text-faint:  #8C8C96;
 
   /* Purple: interactive things only (links, focus, hover, active states) */
   --border:       #2A2A31;                    /* neutral outline */
@@ -378,7 +378,7 @@ a.card:hover { transform: translateY(-2px); }
 /* ---------- Steps (compact) ---------- */
 .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-3); margin-top: var(--s-6); }
 .step { padding-top: var(--s-2); border-top: 1px solid var(--line); }
-.step-num { display: block; font-family: var(--mono); font-size: var(--fs-sm); color: var(--text-faint); margin-bottom: 4px; }
+.step-num { display: block; font-family: var(--mono); font-size: var(--fs-sm); color: var(--text-muted); margin-bottom: 4px; }
 .step h3 { font-size: var(--fs-md); margin-bottom: 4px; }
 .step p { font-size: var(--fs-sm); }
 
@@ -698,7 +698,7 @@ button.chip-open:hover { border-color: var(--accent); }
 /* Key sections: a deep antique gold label and heading */
 .key .eyebrow { color: var(--gold-deep); }
 .key .eyebrow::before { background: var(--gold-line); }
-.step-num { color: #7E6A42; }
+.step-num { color: #9A8554; }
 .policy-list li::before { background: #6F5D3A; }
 
 /* Dropdown live marker */

@@ -1,3 +1,10 @@
+/* Never run inside another site's frame (stops "clickjacking", where a page hides this app
+   under fake buttons to trick clicks). If framed, break out, and stay hidden if we can't. */
+if (window.top !== window.self) {
+  try { window.top.location.replace(window.location.href); } catch (e) { }
+  document.documentElement.style.visibility = "hidden";
+}
+
 /* Firebase connection for Scheduling Agent.
    These values identify your project. They are safe to publish: access is
    controlled by the security rules in firestore.rules, not by hiding this. */
