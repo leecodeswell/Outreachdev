@@ -201,50 +201,13 @@
       sideEnd = { in: W, out: 0 };
       paths.forEach(function (p) { if (!p.node) return; if (p.kind === "in") sideEnd.in = Math.min(sideEnd.in, p.tip.x); else sideEnd.out = Math.max(sideEnd.out, p.tip.x); });
       maxReach = 0; paths.forEach(function (p) { maxReach = Math.max(maxReach, (p.toLimb ? p.toLimb.len : 0) + p.len); });
-      // motes: on the left, loose specks drift every which way (the mess); the core takes them in and
-      // sends them out on the right as tidy dashes running in straight lanes (the order)
-      var count = Math.min(76, Math.round(W * H / 12500));
+      // motes: faint specks of light drifting up through the tree
+      var count = Math.min(70, Math.round(W * H / 15000));
       if (motes.length !== count || !keep.length) {
         motes = [];
-        for (var m = 0; m < count; m++) { var mo = newMote(Math.random() * W, Math.random() * H); if (mo.x > HC.x) toLane(mo, mo.x); motes.push(mo); }
+        for (var m = 0; m < count; m++) motes.push({ x: Math.random() * W, y: Math.random() * H, r: 0.4 + Math.random() * 1.3, vy: -(3 + Math.random() * 9), vx: (Math.random() - 0.5) * 4, ph: Math.random() * 6.283, tw: 0.6 + Math.random() * 1.6 });
       }
       return true;
-    }
-
-    function newMote(x, y) {
-      return { x: x, y: y, r: 0.4 + Math.random() * 1.3, vy: -(3 + Math.random() * 9), vx: 4 + Math.random() * 6, ph: Math.random() * 6.283, tw: 0.6 + Math.random() * 1.6, ord: false };
-    }
-    function toLane(m, x) {
-      var lanes = Math.max(3, Math.floor(H / 26)), k = Math.floor(Math.random() * lanes);
-      m.ord = true; m.x = x; m.lane = H * (k + 0.5) / lanes; m.y = HC.y + (m.lane - HC.y) * 0.25; m.v = 26 + Math.random() * 26; m.len = 5 + Math.random() * 9;
-    }
-    function moveMotes(t, dt, w, alpha) {
-      var Rb = HC.r;
-      motes.forEach(function (m) {
-        var a = (0.05 + 0.16 * m.r / 1.7) * alpha;
-        if (!m.ord) {
-          m.x += (m.vx + Math.sin(t * m.tw + m.ph) * 9 + w * 5) * dt; m.y += (m.vy + Math.cos(t * m.tw * 1.3 + m.ph) * 6) * dt;
-          if (m.y < -12) { m.y = H + 12; m.x = Math.random() * (HC.x - Rb); }
-          if (m.y > H + 12) m.y = -12;
-          if (m.x < -12) m.x = HC.x - Rb;
-          var dx = m.x - HC.x, dy = m.y - HC.y, d = Math.hypot(dx, dy);
-          if (d < Rb * 2.2) { m.x -= dx / d * 60 * dt * (1 - d / (Rb * 2.2)); m.y -= dy / d * 60 * dt * (1 - d / (Rb * 2.2)); }   // pulled in
-          if (d < Rb * 0.8 || m.x > HC.x) { toLane(m, HC.x + Rb * 0.9); return; }
-          a *= 0.55 + 0.45 * Math.sin(t * m.tw + m.ph);
-          if (m.r > 1.05) glow(m.x, m.y, m.r * 7, a * 1.4);
-          else { ctx.fillStyle = "rgba(217,183,132," + a + ")"; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, 6.283); ctx.fill(); }
-        } else {
-          m.x += m.v * dt; m.y += (m.lane - m.y) * Math.min(1, dt * 1.4);
-          if (m.x > W + 20) { if (Math.random() < 0.5) { m.ord = false; m.x = Math.random() * (HC.x - Rb * 1.5); m.y = H + 10; } else toLane(m, HC.x + Rb * 0.9); return; }
-          var fadeIn = clamp((m.x - HC.x - Rb) / 60, 0, 1), fadeOut = clamp((W - m.x) / 120, 0, 1);
-          a = (0.1 + 0.2 * m.r / 1.7) * alpha * fadeIn * fadeOut;
-          ctx.lineWidth = 0.9 + m.r * 0.5; ctx.lineCap = "round";
-          ctx.strokeStyle = "rgba(237,199,136," + a * 0.35 + ")";
-          ctx.beginPath(); ctx.moveTo(m.x - m.len, m.y); ctx.lineTo(m.x - m.len * 0.45, m.y); ctx.stroke();
-          ctx.strokeStyle = "rgba(246,223,180," + a + ")";
-          ctx.beginPath(); ctx.moveTo(m.x - m.len * 0.45, m.y); ctx.lineTo(m.x, m.y); ctx.stroke();
-        }
-      });
     }
 
     // where the branch runs right now (its leaf end moves with the leaf)
@@ -415,7 +378,7 @@
        the branches plug in. It glows steadily, tilts toward the cursor, and spins up on hover. */
     var markPath = null;
     (function () { var el = document.querySelector("#o-mark path"); if (el && window.Path2D) markPath = new Path2D(el.getAttribute("d")); })();
-    var core = { tx: 0.34, ty: 0, hover: 0, hoverT: 0 };
+    var core = { tx: 0.34, ty: 0, hover: 0, hoverT: 0, touch: 0, ripples: [] };
     var RINGS = [
       { r: 1.0,  inc: 0,     node: 0,   rate: 0,     ph: 0, bs: 0.42,  bp: 0, beads: [0, 3.4] },
       { r: 0.86, inc: 1.08,  node: 0.5, rate: 0.21,  ph: 0, bs: -0.62, bp: 0, beads: [1.3] },
@@ -475,7 +438,7 @@
       });
     }
     function drawNucleus(t, vis) {
-      var R = coreR(), br = vis + core.hover * 0.12;
+      var R = coreR(), br = vis + core.hover * 0.12 + core.touch * 0.1;
       // the wide halo is a CSS layer under the canvas (cheap to fade); only the hot center is drawn here
       var gl = clamp(br, 0, 1.6).toFixed(3);
       if (gl !== core.gl) { core.gl = gl; hub.style.setProperty("--core-glow", gl); }
@@ -518,6 +481,11 @@
         var a = -1.5708 + i / n * 6.2832, da = Math.atan2(Math.sin(a - sweep), Math.cos(a - sweep));
         var lit = Math.exp(-da * da / 0.12) + Math.exp(-Math.pow(Math.atan2(Math.sin(a - sweep - 3.1416), Math.cos(a - sweep - 3.1416)), 2) / 0.12) * 0.5;
         var al = (i % 10 === 0 ? 0.3 : 0.14) + 0.6 * lit;
+        paths.forEach(function (p) {   // the ticks beside a port light up briefly when light arrives there
+          if (!p.port) return;
+          var dp = Math.atan2(Math.sin(a - p.portA), Math.cos(a - p.portA));
+          al += 0.45 * p.port * Math.exp(-dp * dp / 0.05);
+        });
         bins[Math.min(LV - 1, Math.round(al * (LV - 1)))].push(i);
       }
       bins.forEach(function (list, b) {
@@ -534,7 +502,12 @@
       ctx.globalCompositeOperation = "lighter";
       paths.forEach(function (p) {
         if (p.toLimb) return;
-        glow(p.hubPt.x, p.hubPt.y, 10, 0.4);
+        glow(p.hubPt.x, p.hubPt.y, 10 + 5 * (p.port || 0), 0.4 + 0.3 * (p.port || 0));
+      });
+      core.ripples.forEach(function (r) {   // one faint ring slipping outward from the bezel
+        var k = r.age / 1.4;
+        ctx.strokeStyle = "rgba(237,199,136," + 0.16 * (1 - k) * (1 - k) + ")"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(HC.x, HC.y, Rb * (1 + ease(k) * 0.3), 0, 6.2832); ctx.stroke();
       });
       ctx.globalCompositeOperation = "source-over";
     }
@@ -544,8 +517,18 @@
       var f = Math.min(1, dt * 2.6);
       core.tx += (bx - core.tx) * f; core.ty += (by - core.ty) * f;
       core.hover += (core.hoverT - core.hover) * Math.min(1, dt * 5);
-      var boost = 1 + core.hover * 1.6;
+      core.touch = Math.max(0, core.touch - dt * 0.9);
+      paths.forEach(function (p) { if (p.port) p.port = Math.max(0, p.port - dt * 0.8); });
+      for (var i = core.ripples.length - 1; i >= 0; i--) { core.ripples[i].age += dt; if (core.ripples[i].age > 1.4) core.ripples.splice(i, 1); }
+      var boost = 1 + core.hover * 1.6 + core.touch * 0.9;
       RINGS.forEach(function (rg) { rg.ph += rg.rate * dt * boost; rg.bp += rg.bs * dt * boost; });
+    }
+    // light reaching the core: its port and the nearby ticks brighten, the rings quicken a little,
+    // and one faint ring slips outward. Everything eases off within about a second.
+    function touchCore(p) {
+      p.port = 1; p.portA = Math.atan2(p.hubPt.y - HC.y, p.hubPt.x - HC.x);
+      core.touch = 1;
+      if (core.ripples.length < 2) core.ripples.push({ age: 0 });
     }
     function drawCore(t, vis) {
       drawRings(false, vis);
@@ -609,7 +592,15 @@
 
       // motes, behind everything
       ctx.globalCompositeOperation = "lighter";
-      moveMotes(t, dt, w, grown ? 1 : 0.4);
+      motes.forEach(function (m) {
+        m.x += (m.vx + w * 5) * dt; m.y += m.vy * dt;
+        if (m.y < -12) { m.y = H + 12; m.x = Math.random() * W; }
+        if (m.x < -12) m.x = W + 12; else if (m.x > W + 12) m.x = -12;
+        var fall = 1 - Math.min(1, Math.abs(m.x - W / 2) / (W * 0.62)) * 0.55;
+        var a = (0.05 + 0.16 * m.r / 1.7) * (0.55 + 0.45 * Math.sin(t * m.tw + m.ph)) * fall * (grown ? 1 : 0.4);
+        if (m.r > 1.05) glow(m.x, m.y, m.r * 7, a * 1.4);
+        else { ctx.fillStyle = "rgba(217,183,132," + a + ")"; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, 6.283); ctx.fill(); }
+      });
       ctx.globalCompositeOperation = "source-over";
       stepCore(t, dt);
 
@@ -667,7 +658,7 @@
         if (q.t >= 1 && !q.done) {
           q.done = true;
           if (q.p.toLimb) { pulses.push({ p: q.p.toLimb, t: (q.t - 1) * q.p.len / q.p.toLimb.len, wait: 0, prev: q.p }); pulses.splice(i, 1); continue; }   // carry on down the limb, same streak
-          else if (q.p.kind === "in") spawnOut(null, 0.18);
+          else if (q.p.kind === "in") { touchCore(q.p); spawnOut(null, 0.18); }
           else { lit(q.p.node); var e = q.p.p3; burst(e.x, e.y); }
         }
         if (q.t > 1 + 115 / q.p.len) pulses.splice(i, 1);
@@ -710,6 +701,7 @@
     hub.addEventListener("mouseleave", function () { core.hoverT = 0; });
     hub.addEventListener("click", function () {
       if (!grown || reduceMotion) return;
+      core.touch = 1; if (core.ripples.length < 2) core.ripples.push({ age: 0 });
       paths.forEach(function (p) { if (p.kind === "out") spawnOut(p); });
     });
 
