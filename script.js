@@ -55,7 +55,7 @@
 
   /* =====================================================================
      PHONES: the mission statement types itself out like code
-     (at this size the hero shows only the core; desktop is untouched)
+     (the tree is hidden at this size; desktop is untouched)
      ===================================================================== */
   (function typeMission() {
     var el = $(".mission-text");
@@ -109,7 +109,6 @@
     var inputs = $$('[data-node="in"]', flow), outputs = $$('[data-node="out"]', flow), hub = $('[data-node="hub"]', flow);
     var labels = $$(".flow-label", flow);
     var paths = [], pulses = [], ripples = [], sparks = [], motes = [], falling = [];
-    var compact = false;   // phones: just the core, with the specks flowing through it
     var sideEnd = { in: 0, out: 1 }, maxReach = 1, W = 0, H = 0, HC = { x: 0, y: 0, r: 1 }, twigLen = 40;
     var growStart = -1, grown = false, visible = true, seen = false, clock = 0, liveAt = -1, nextFall = 4, spawnClock = 0.4;
     var ptr = { x: -9999, y: -9999, on: false };
@@ -119,8 +118,8 @@
     var sprite = (function () {
       var c = document.createElement("canvas"); c.width = c.height = 256;
       var g = c.getContext("2d"), r = g.createRadialGradient(128, 128, 0, 128, 128, 128);
-      r.addColorStop(0, "rgba(255,246,222,1)"); r.addColorStop(0.07, "rgba(255,234,186,0.9)");
-      r.addColorStop(0.22, "rgba(238,200,124,0.38)"); r.addColorStop(0.5, "rgba(201,162,79,0.11)"); r.addColorStop(1, "rgba(201,162,79,0)");
+      r.addColorStop(0, "rgba(252,243,225,1)"); r.addColorStop(0.07, "rgba(245,219,174,0.9)");
+      r.addColorStop(0.22, "rgba(203,154,88,0.38)"); r.addColorStop(0.5, "rgba(134,105,68,0.11)"); r.addColorStop(1, "rgba(134,105,68,0)");
       g.fillStyle = r; g.fillRect(0, 0, 256, 256); return c;
     })();
     function glow(x, y, R, a) { if (a <= 0) return; ctx.globalAlpha = Math.min(1, a); ctx.drawImage(sprite, x - R, y - R, R * 2, R * 2); ctx.globalAlpha = 1; }
@@ -184,9 +183,8 @@
         return p;
       }
       var keep = paths; paths = []; pulses = []; sparks = []; ripples = [];
-      compact = !inputs.length || getComputedStyle(inputs[0].parentElement).display === "none";
       // the inputs gather onto three limbs (top, middle, bottom) that run into the orb
-      var groups = compact ? [] : [[0, 1], [2, 3], [4, 5]], maxTip = 0;
+      var groups = [[0, 1], [2, 3], [4, 5]], maxTip = 0;
       inputs.forEach(function (nd) { var r = nd.querySelector(".stem").getBoundingClientRect(); maxTip = Math.max(maxTip, r.right - base.left); });
       var forkX = maxTip + (HC.x - HC.r - maxTip) * 0.42;
       groups.forEach(function (gr, gi) {
@@ -199,13 +197,13 @@
         paths.push(limb);
         members.forEach(function (nd, k) { var p = make(nd, "in", 300, fork); p.toLimb = limb; paths.push(p); });
       });
-      if (!compact) outputs.forEach(function (nd, k) { paths.push(make(nd, "out", 300)); });
+      outputs.forEach(function (nd, k) { paths.push(make(nd, "out", 300)); });
       sideEnd = { in: W, out: 0 };
       paths.forEach(function (p) { if (!p.node) return; if (p.kind === "in") sideEnd.in = Math.min(sideEnd.in, p.tip.x); else sideEnd.out = Math.max(sideEnd.out, p.tip.x); });
       maxReach = 0; paths.forEach(function (p) { maxReach = Math.max(maxReach, (p.toLimb ? p.toLimb.len : 0) + p.len); });
       // motes: on the left, loose specks drift every which way (the mess); the core takes them in and
       // sends them out on the right as tidy dashes running in straight lanes (the order)
-      var count = compact ? Math.round(W / 9) : Math.min(76, Math.round(W * H / 12500));
+      var count = Math.min(76, Math.round(W * H / 12500));
       if (motes.length !== count || !keep.length) {
         motes = [];
         for (var m = 0; m < count; m++) { var mo = newMote(Math.random() * W, Math.random() * H); if (mo.x > HC.x) toLane(mo, mo.x); motes.push(mo); }
@@ -225,7 +223,7 @@
       motes.forEach(function (m) {
         var a = (0.05 + 0.16 * m.r / 1.7) * alpha;
         if (!m.ord) {
-          m.x += (m.vx * (compact ? 2.4 : 1) + Math.sin(t * m.tw + m.ph) * 9 + w * 5) * dt; m.y += (m.vy + Math.cos(t * m.tw * 1.3 + m.ph) * 6) * dt;
+          m.x += (m.vx + Math.sin(t * m.tw + m.ph) * 9 + w * 5) * dt; m.y += (m.vy + Math.cos(t * m.tw * 1.3 + m.ph) * 6) * dt;
           if (m.y < -12) { m.y = H + 12; m.x = Math.random() * (HC.x - Rb); }
           if (m.y > H + 12) m.y = -12;
           if (m.x < -12) m.x = HC.x - Rb;
@@ -234,16 +232,16 @@
           if (d < Rb * 0.8 || m.x > HC.x) { toLane(m, HC.x + Rb * 0.9); return; }
           a *= 0.55 + 0.45 * Math.sin(t * m.tw + m.ph);
           if (m.r > 1.05) glow(m.x, m.y, m.r * 7, a * 1.4);
-          else { ctx.fillStyle = "rgba(240,214,160," + a + ")"; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, 6.283); ctx.fill(); }
+          else { ctx.fillStyle = "rgba(217,183,132," + a + ")"; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, 6.283); ctx.fill(); }
         } else {
           m.x += m.v * dt; m.y += (m.lane - m.y) * Math.min(1, dt * 1.4);
           if (m.x > W + 20) { if (Math.random() < 0.5) { m.ord = false; m.x = Math.random() * (HC.x - Rb * 1.5); m.y = H + 10; } else toLane(m, HC.x + Rb * 0.9); return; }
           var fadeIn = clamp((m.x - HC.x - Rb) / 60, 0, 1), fadeOut = clamp((W - m.x) / 120, 0, 1);
           a = (0.1 + 0.2 * m.r / 1.7) * alpha * fadeIn * fadeOut;
           ctx.lineWidth = 0.9 + m.r * 0.5; ctx.lineCap = "round";
-          ctx.strokeStyle = "rgba(255,226,160," + a * 0.35 + ")";
+          ctx.strokeStyle = "rgba(237,199,136," + a * 0.35 + ")";
           ctx.beginPath(); ctx.moveTo(m.x - m.len, m.y); ctx.lineTo(m.x - m.len * 0.45, m.y); ctx.stroke();
-          ctx.strokeStyle = "rgba(255,236,190," + a + ")";
+          ctx.strokeStyle = "rgba(246,223,180," + a + ")";
           ctx.beginPath(); ctx.moveTo(m.x - m.len * 0.45, m.y); ctx.lineTo(m.x, m.y); ctx.stroke();
         }
       });
@@ -300,9 +298,9 @@
       { w: 0.58, a: [0.1, 0.75], b: [0.52, 1.18] }     // round
     ];
     var TONES = [
-      { base: [104, 78, 32], tip: [232, 196, 116], under: [242, 222, 176] },   // gold
-      { base: [112, 82, 26], tip: [238, 200, 104], under: [246, 226, 170] },   // bright gold
-      { base: [92, 70, 30], tip: [220, 184, 104], under: [238, 218, 168] }     // soft gold
+      { base: [65, 50, 33], tip: [192, 145, 79], under: [225, 198, 154] },   // gold
+      { base: [69, 51, 30], tip: [196, 146, 67], under: [228, 201, 147] },   // bright gold
+      { base: [58, 45, 30], tip: [166, 126, 72], under: [217, 190, 142] }     // soft gold
     ];
     function pickTone(r) { return r < 0.45 ? 0 : r < 0.8 ? 1 : 2; }
     function rgba(c, k, a) { return "rgba(" + (c[0] * k | 0) + "," + (c[1] * k | 0) + "," + (c[2] * k | 0) + "," + a + ")"; }
@@ -333,11 +331,11 @@
       half(1); ctx.fillStyle = g2; ctx.fill();
       // a soft sheen across the lit half
       var sh = ctx.createLinearGradient(0, -w * 0.9, 0, 0);
-      sh.addColorStop(0, "rgba(255,244,220," + (0.16 + 0.22 * bright) + ")"); sh.addColorStop(1, "rgba(255,244,220,0)");
+      sh.addColorStop(0, "rgba(252,241,223," + (0.16 + 0.22 * bright) + ")"); sh.addColorStop(1, "rgba(252,241,223,0)");
       half(-1); ctx.fillStyle = sh; ctx.fill();
       // veins
       var vA = 0.22 + 0.4 * bright, lw = Math.max(0.45, len * 0.028);
-      ctx.strokeStyle = "rgba(255,238,196," + vA + ")"; ctx.lineWidth = lw;
+      ctx.strokeStyle = "rgba(247,227,189," + vA + ")"; ctx.lineWidth = lw;
       ctx.beginPath();
       for (var v = 1; v <= 4; v++) {
         var u = 0.12 + v * 0.17, reach = w * S.b[1] * 0.62 * (1 - u * 0.45);
@@ -346,11 +344,11 @@
       }
       ctx.stroke();
       // midrib
-      ctx.strokeStyle = "rgba(255,240,206," + (0.42 + 0.45 * bright) + ")"; ctx.lineWidth = lw * 1.7;
+      ctx.strokeStyle = "rgba(249,233,205," + (0.42 + 0.45 * bright) + ")"; ctx.lineWidth = lw * 1.7;
       ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(L * 0.5, -w * 0.04, L * 0.94, 0); ctx.stroke();
       // bright rim on the lit edge
       ctx.beginPath(); ctx.moveTo(0, 0); ctx.bezierCurveTo(L * S.a[0], -w * S.a[1], L * S.b[0], -w * S.b[1], L, 0);
-      ctx.strokeStyle = "rgba(255,236,190," + (0.32 + 0.5 * bright) + ")"; ctx.lineWidth = lw * 1.4; ctx.stroke();
+      ctx.strokeStyle = "rgba(246,223,180," + (0.32 + 0.5 * bright) + ")"; ctx.lineWidth = lw * 1.4; ctx.stroke();
       // a darker edge on the shaded side gives the leaf body
       ctx.beginPath(); ctx.moveTo(0, 0); ctx.bezierCurveTo(L * S.a[0], w * S.a[1], L * S.b[0], w * S.b[1], L, 0);
       ctx.strokeStyle = rgba(T.base, 0.6, 0.5); ctx.lineWidth = lw; ctx.stroke();
@@ -371,11 +369,11 @@
       // soft light under the branch
       ctx.lineCap = "round"; ctx.lineJoin = "round";
       ctx.beginPath(); pts.forEach(function (q, k) { if (k) ctx.lineTo(q.x, q.y); else ctx.moveTo(q.x, q.y); });
-      if (p.kind === "out") { ctx.strokeStyle = "rgba(201,162,79,0.06)"; ctx.lineWidth = 7; ctx.stroke(); }   // no halo on the forked side, so nothing marks where a branch splits
+      if (p.kind === "out") { ctx.strokeStyle = "rgba(134,105,68,0.06)"; ctx.lineWidth = 7; ctx.stroke(); }   // no halo on the forked side, so nothing marks where a branch splits
       // one gradient per side, measured from the orb, so a limb and the branches that fork off it shade as one piece
       var gx0 = HC.x + (p.kind === "in" ? -HC.r : HC.r), gx1 = p.kind === "in" ? sideEnd.in : sideEnd.out;
       var gr = ctx.createLinearGradient(gx0, 0, gx1, 0);
-      gr.addColorStop(0, "rgb(205,172,100)"); gr.addColorStop(0.55, "rgb(116,95,49)"); gr.addColorStop(1, "rgb(68,56,31)");   // solid, so overlapping branches at a fork don't add up
+      gr.addColorStop(0, "rgb(145,115,75)"); gr.addColorStop(0.55, "rgb(74,61,44)"); gr.addColorStop(1, "rgb(44,37,27)");   // solid, so overlapping branches at a fork don't add up
       ctx.fillStyle = gr;
       if (p.kind === "out") ribbon(pts, 6, 2 + 3 * (1 - g)); else if (p.isLimb) ribbon(pts, 6, 3.2 + 2 * (1 - g)); else ribbon(pts, 3.2, 0.8 + 2.4 * (1 - g));
       // twigs and their leaves
@@ -391,7 +389,7 @@
         function q(u) { var v = 1 - u; return { x: v * v * s.x + 2 * v * u * c.x + u * u * en.x, y: v * v * s.y + 2 * v * u * c.y + u * u * en.y }; }
         var tp = []; for (var j = 0; j <= 14; j++) tp.push(q(e * j / 14));
         var lit = energy(p, tPath);
-        ctx.fillStyle = "rgba(" + (201 + 40 * lit | 0) + "," + (162 + 50 * lit | 0) + "," + (79 + 70 * lit | 0) + "," + (0.42 + 0.45 * lit) + ")";
+        ctx.fillStyle = "rgba(" + (134 + 81 * lit | 0) + "," + (105 + 72 * lit | 0) + "," + (68 + 51 * lit | 0) + "," + (0.42 + 0.45 * lit) + ")";
         ribbon(tp, 1.5, 0.5);
         var lg = clamp((g - tw.at - 0.18) / 0.22, 0, 1);
         if (!lg) return;
@@ -414,10 +412,10 @@
     /* ---------- the core: a gold gyroscope ----------
        Three fine rings turn in 3D around a glowing nucleus and the logo. The back half of each ring
        passes behind the logo and the front half in front of it. A precision bezel of ticks marks where
-       the branches plug in. It tilts toward the cursor, spins up on hover, and flares when light arrives. */
+       the branches plug in. It glows steadily, tilts toward the cursor, and spins up on hover. */
     var markPath = null;
     (function () { var el = document.querySelector("#o-mark path"); if (el && window.Path2D) markPath = new Path2D(el.getAttribute("d")); })();
-    var core = { tx: 0.34, ty: 0, flash: 0, hover: 0, hoverT: 0, waves: [], intro: 1 };
+    var core = { tx: 0.34, ty: 0, hover: 0, hoverT: 0 };
     var RINGS = [
       { r: 1.0,  inc: 0,     node: 0,   rate: 0,     ph: 0, bs: 0.42,  bp: 0, beads: [0, 3.4] },
       { r: 0.86, inc: 1.08,  node: 0.5, rate: 0.21,  ph: 0, bs: -0.62, bp: 0, beads: [1.3] },
@@ -446,11 +444,11 @@
         var i0 = 0;
         function run(i1, band) {
           if (i1 <= i0) return;
-          var d = band / 10, al = (0.16 + 0.72 * d) * (0.85 + 0.15 * core.hover + 0.4 * core.flash);
+          var d = band / 10, al = (0.16 + 0.72 * d) * (0.85 + 0.15 * core.hover);
           ctx.beginPath(); ctx.moveTo(pts[i0].x, pts[i0].y);
           for (var k = i0 + 1; k <= i1; k++) ctx.lineTo(pts[k].x, pts[k].y);
-          ctx.strokeStyle = "rgba(226,184,96," + (al * 0.16) + ")"; ctx.lineWidth = 4.5; ctx.stroke();
-          ctx.strokeStyle = "rgba(255,226,160," + al + ")"; ctx.lineWidth = 0.7 + 1.4 * d; ctx.stroke();
+          ctx.strokeStyle = "rgba(169,124,67," + (al * 0.16) + ")"; ctx.lineWidth = 4.5; ctx.stroke();
+          ctx.strokeStyle = "rgba(237,199,136," + al + ")"; ctx.lineWidth = 0.7 + 1.4 * d; ctx.stroke();
         }
         var band = -1, side = null;
         for (i = 0; i < n; i++) {
@@ -468,16 +466,16 @@
           for (var k = 1; k <= 12; k++) {
             var q = ringPt(rg, th + dir * k * 0.045);
             ctx.beginPath(); ctx.moveTo(prev.x, prev.y); ctx.lineTo(q.x, q.y);
-            ctx.strokeStyle = "rgba(255,238,200," + ((1 - k / 12) * (0.35 + 0.6 * d)) + ")"; ctx.lineWidth = 1.2 + 1.2 * d * (1 - k / 12); ctx.stroke();
+            ctx.strokeStyle = "rgba(248,229,195," + ((1 - k / 12) * (0.35 + 0.6 * d)) + ")"; ctx.lineWidth = 1.2 + 1.2 * d * (1 - k / 12); ctx.stroke();
             prev = q;
           }
           glow(hd.x, hd.y, 9 + 9 * d, 0.45 + 0.5 * d);
-          ctx.fillStyle = "rgba(255,250,236," + (0.6 + 0.4 * d) + ")"; ctx.beginPath(); ctx.arc(hd.x, hd.y, 0.9 + 0.9 * d, 0, 6.283); ctx.fill();
+          ctx.fillStyle = "rgba(253,248,238," + (0.6 + 0.4 * d) + ")"; ctx.beginPath(); ctx.arc(hd.x, hd.y, 0.9 + 0.9 * d, 0, 6.283); ctx.fill();
         });
       });
     }
     function drawNucleus(t, vis) {
-      var R = coreR(), br = (0.88 + 0.12 * Math.sin(t * 1.7)) * vis + core.flash * 0.7 + core.hover * 0.22;
+      var R = coreR(), br = vis + core.hover * 0.12;
       // the wide halo is a CSS layer under the canvas (cheap to fade); only the hot center is drawn here
       var gl = clamp(br, 0, 1.6).toFixed(3);
       if (gl !== core.gl) { core.gl = gl; hub.style.setProperty("--core-glow", gl); }
@@ -491,7 +489,6 @@
       ctx.globalAlpha = clamp(vis * 1.4, 0, 1);
       ctx.drawImage(img, HC.x - (sz / 2 + pad) * sx, HC.y - (sz / 2 + pad) * sy, (sz + pad * 2) * sx, (sz + pad * 2) * sy);
       ctx.globalAlpha = 1;
-      if (core.flash > 0.02) { ctx.globalCompositeOperation = "lighter"; glow(HC.x, HC.y, R * 0.9, core.flash * 0.35); ctx.globalCompositeOperation = "source-over"; }
     }
     var logoCache = null;
     function logoImage(size) {
@@ -502,10 +499,10 @@
       c.width = c.height = Math.round(px * (1 + pad * 2));
       g.translate(c.width / 2, c.height / 2); g.scale(k, k); g.translate(-100.8, -95.4);
       var gr = g.createLinearGradient(40, 28, 150, 164);
-      gr.addColorStop(0, "#FFF6DC"); gr.addColorStop(0.42, "#F2CF86"); gr.addColorStop(1, "#A97C30");
+      gr.addColorStop(0, "#FCF3DF"); gr.addColorStop(0.42, "#D3A665"); gr.addColorStop(1, "#694F33");
       g.fillStyle = gr;
-      g.shadowColor = "rgba(20,12,0,0.85)"; g.shadowBlur = px * 0.06; g.shadowOffsetY = px * 0.012; g.fill(markPath);
-      g.shadowColor = "rgba(255,206,120,0.6)"; g.shadowBlur = px * 0.16; g.shadowOffsetY = 0; g.fill(markPath);
+      g.shadowColor = "rgba(12,7,3,0.85)"; g.shadowBlur = px * 0.06; g.shadowOffsetY = px * 0.012; g.fill(markPath);
+      g.shadowColor = "rgba(224,162,86,0.6)"; g.shadowBlur = px * 0.16; g.shadowOffsetY = 0; g.fill(markPath);
       c.px = px; c.pad = pad; logoCache = c;
       return c;
     }
@@ -513,19 +510,19 @@
     function drawBezel(t, vis) {
       var Rb = HC.r, sweep = t * 0.55, n = 120;
       ctx.lineCap = "butt";
-      ctx.strokeStyle = "rgba(226,190,112," + 0.14 * vis + ")"; ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgba(183,137,74," + 0.14 * vis + ")"; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.arc(HC.x, HC.y, Rb, -1.5708, -1.5708 + 6.2832 * vis); ctx.stroke();
       var LV = 8, bins = [];
       for (var b = 0; b < LV; b++) bins.push([]);
       for (var i = 0; i < n * vis; i++) {
         var a = -1.5708 + i / n * 6.2832, da = Math.atan2(Math.sin(a - sweep), Math.cos(a - sweep));
         var lit = Math.exp(-da * da / 0.12) + Math.exp(-Math.pow(Math.atan2(Math.sin(a - sweep - 3.1416), Math.cos(a - sweep - 3.1416)), 2) / 0.12) * 0.5;
-        var al = (i % 10 === 0 ? 0.3 : 0.14) + 0.6 * lit + 0.3 * core.flash;
+        var al = (i % 10 === 0 ? 0.3 : 0.14) + 0.6 * lit;
         bins[Math.min(LV - 1, Math.round(al * (LV - 1)))].push(i);
       }
       bins.forEach(function (list, b) {
         if (!list.length) return;
-        ctx.strokeStyle = "rgba(240,206,134," + (b / (LV - 1)) * vis + ")";
+        ctx.strokeStyle = "rgba(209,164,100," + (b / (LV - 1)) * vis + ")";
         ctx.beginPath();
         list.forEach(function (i) {
           var a = -1.5708 + i / n * 6.2832, c = Math.cos(a), s = Math.sin(a), L = i % 10 === 0 ? 7 : 3.5;
@@ -537,12 +534,7 @@
       ctx.globalCompositeOperation = "lighter";
       paths.forEach(function (p) {
         if (p.toLimb) return;
-        glow(p.hubPt.x, p.hubPt.y, 10 + 10 * p.port, 0.4 + 0.6 * p.port);
-      });
-      core.waves.forEach(function (w) {
-        var k = w.age / w.life;
-        ctx.strokeStyle = "rgba(255,226,160," + (1 - k) * 0.45 + ")"; ctx.lineWidth = 1.4 * (1 - k) + 0.3;
-        ctx.beginPath(); ctx.arc(HC.x, HC.y, Rb * (1 + ease(k) * 0.7), 0, 6.2832); ctx.stroke();
+        glow(p.hubPt.x, p.hubPt.y, 10, 0.4);
       });
       ctx.globalCompositeOperation = "source-over";
     }
@@ -552,11 +544,8 @@
       var f = Math.min(1, dt * 2.6);
       core.tx += (bx - core.tx) * f; core.ty += (by - core.ty) * f;
       core.hover += (core.hoverT - core.hover) * Math.min(1, dt * 5);
-      core.flash = Math.max(0, core.flash - dt * 1.6);
-      paths.forEach(function (p) { if (p.port) p.port = Math.max(0, p.port - dt * 1.8); });
-      var boost = 1 + core.hover * 1.6 + core.flash * 2.2;
+      var boost = 1 + core.hover * 1.6;
       RINGS.forEach(function (rg) { rg.ph += rg.rate * dt * boost; rg.bp += rg.bs * dt * boost; });
-      for (var i = core.waves.length - 1; i >= 0; i--) { core.waves[i].age += dt; if (core.waves[i].age > core.waves[i].life) core.waves.splice(i, 1); }
     }
     function drawCore(t, vis) {
       drawRings(false, vis);
@@ -564,11 +553,7 @@
       drawRings(true, vis);
       drawBezel(t, vis);
     }
-    function hubPulse(p) {
-      core.flash = Math.min(1, core.flash + 0.7);
-      core.waves.push({ age: 0, life: 1.3 });
-      if (p) p.port = 1;
-    }
+
 
     /* ---------- light pulses ---------- */
     function lit(node) { node.classList.add("is-lit"); setTimeout(function () { node.classList.remove("is-lit"); }, 900); }
@@ -581,9 +566,7 @@
     function spawnOut(p, wait) {
       var outs = paths.filter(function (x) { return x.kind === "out"; });
       p = p || outs[Math.floor(Math.random() * outs.length)];
-      if (!p) return;
-      pulses.push({ p: p, t: 0, wait: wait || 0 });
-      if (!wait) p.port = 1;
+      if (p) pulses.push({ p: p, t: 0, wait: wait || 0 });
     }
     function burst(x, y) {
       for (var i = 0; i < 9; i++) { var a = Math.random() * 6.283, v = 18 + Math.random() * 38; sparks.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, age: 0, life: 0.5 + Math.random() * 0.5 }); }
@@ -599,10 +582,10 @@
         for (var k = 0; k <= N; k++) pts.push(at(st + (sh - st) * k / N));
         var a = pts[0], b = pts[N], fade = clamp((q.t * p.len - p.len) / SPAN, 0, 1);
         var g = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-        g.addColorStop(0, "rgba(255,228,166,0)"); g.addColorStop(0.6, "rgba(255,226,160," + 0.35 * (1 - fade) + ")"); g.addColorStop(1, "rgba(255,240,205," + 0.95 * (1 - fade) + ")");
+        g.addColorStop(0, "rgba(239,204,145,0)"); g.addColorStop(0.6, "rgba(237,199,136," + 0.35 * (1 - fade) + ")"); g.addColorStop(1, "rgba(249,233,203," + 0.95 * (1 - fade) + ")");
         ctx.fillStyle = g; ribbon(pts, 0.2, 2.6);
       }
-      if (q.t <= 1) { var h = bez(p, q.t); glow(h.x, h.y, 20, 0.95); ctx.fillStyle = "rgba(255,250,236,0.95)"; ctx.beginPath(); ctx.arc(h.x, h.y, 1.4, 0, 6.283); ctx.fill(); }
+      if (q.t <= 1) { var h = bez(p, q.t); glow(h.x, h.y, 20, 0.95); ctx.fillStyle = "rgba(253,248,238,0.95)"; ctx.beginPath(); ctx.arc(h.x, h.y, 1.4, 0, 6.283); ctx.fill(); }
     }
 
     /* ---------- falling leaves ---------- */
@@ -626,7 +609,7 @@
 
       // motes, behind everything
       ctx.globalCompositeOperation = "lighter";
-      moveMotes(t, dt, w, (grown ? 1 : 0.4) * (compact ? 1.7 : 1));
+      moveMotes(t, dt, w, grown ? 1 : 0.4);
       ctx.globalCompositeOperation = "source-over";
       stepCore(t, dt);
 
@@ -634,7 +617,6 @@
         if (growStart < 0) { if (!seen) return; growStart = ts + 150; }
         var el = ts - growStart, done = true, cv = clamp(el / 1300, 0, 1);
         // the core assembles first: rings draw themselves in, then the nucleus lights
-        if (cv >= 0.62 && !core.lit) { core.lit = true; hubPulse(); }
         paths.forEach(function (p) {
           geom(p);
           // one continuous growth front moving out from the core: a leaf's branch picks up exactly where its limb ends
@@ -675,19 +657,17 @@
 
       // light: new pulse about once a second
       spawnClock -= dt;
-      if (spawnClock <= 0) {
-        if (compact) { hubPulse(); spawnClock = 2.6 + Math.random() * 1.4; } else { spawnIn(); spawnClock = 0.9 + Math.random() * 0.5; }
-      }
+      if (spawnClock <= 0) { spawnIn(); spawnClock = 0.9 + Math.random() * 0.5; }
       ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
       for (var i = pulses.length - 1; i >= 0; i--) {
         var q = pulses[i];
-        if (q.wait > 0) { q.wait -= dt; if (q.wait <= 0) q.p.port = 1; continue; }
+        if (q.wait > 0) { q.wait -= dt; continue; }
         q.t += SPEED / q.p.len * dt;
         drawPulse(q);
         if (q.t >= 1 && !q.done) {
           q.done = true;
           if (q.p.toLimb) { pulses.push({ p: q.p.toLimb, t: (q.t - 1) * q.p.len / q.p.toLimb.len, wait: 0, prev: q.p }); pulses.splice(i, 1); continue; }   // carry on down the limb, same streak
-          else if (q.p.kind === "in") { hubPulse(q.p); spawnOut(null, 0.18); }
+          else if (q.p.kind === "in") spawnOut(null, 0.18);
           else { lit(q.p.node); var e = q.p.p3; burst(e.x, e.y); }
         }
         if (q.t > 1 + 115 / q.p.len) pulses.splice(i, 1);
@@ -730,7 +710,7 @@
     hub.addEventListener("mouseleave", function () { core.hoverT = 0; });
     hub.addEventListener("click", function () {
       if (!grown || reduceMotion) return;
-      hubPulse(); paths.forEach(function (p) { if (p.kind === "out") spawnOut(p); });
+      paths.forEach(function (p) { if (p.kind === "out") spawnOut(p); });
     });
 
     function start() {
