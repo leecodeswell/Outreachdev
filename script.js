@@ -12,34 +12,6 @@
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ---------- Story layer gate (see STORY LAYER below) ----------
-     On only for desktop with motion allowed. busy/whenIdle keep two beats from playing at once. */
-  var story = {
-    on: !reduceMotion && "IntersectionObserver" in window && window.matchMedia("(min-width: 721px)").matches,
-    busy: false, queue: [],
-    whenIdle: function (fn) { if (story.busy) story.queue.push(fn); else fn(); },
-    idle: function () { story.busy = false; var q = story.queue; story.queue = []; q.forEach(function (fn) { fn(); }); }
-  };
-  // Calls cb(el, false) once, the first time each element comes into view. Elements that are already on
-  // screen (or scrolled past) get cb(el, true) so they can sit in their finished state. Returns the elements
-  // still waiting, so the caller can put them in their "before" state.
-  function once(els, cb, opts) {
-    var waiting = [];
-    els.forEach(function (el) { if (el.getBoundingClientRect().top < window.innerHeight) cb(el, true); else waiting.push(el); });
-    if (!waiting.length) return waiting;
-    var left = waiting.slice();
-    function fire(el, already) { var k = left.indexOf(el); if (k < 0) return; left.splice(k, 1); io.unobserve(el); cb(el, already); }
-    // a fast flick can skip right past an element without it ever "intersecting": catch those too
-    function sweep() { left.slice().forEach(function (el) { if (el.getBoundingClientRect().bottom < 0) fire(el, true); }); }
-    var io = new IntersectionObserver(function (es) {
-      es.forEach(function (e) { if (e.isIntersecting) fire(e.target, false); });
-      sweep();
-    }, opts);
-    waiting.forEach(function (el) { io.observe(el); });
-    window.addEventListener("scrollend", sweep, { passive: true });
-    return waiting;
-  }
-
   /* ---------- Mobile menu ---------- */
   var navBtn = $(".nav-toggle"), nav = $("#site-nav");
   function setMenu(open) {
@@ -89,19 +61,19 @@
     var el = $(".mission-text");
     if (!el || !window.matchMedia("(max-width: 720px)").matches) return;
     var text = el.textContent.trim();
-    // screen readers get the sentence once, whole; the typed copy is decoration
     el.textContent = "";
+    // screen readers get the sentence once, whole; the typed copy beside it is decoration
     var whole = document.createElement("span"); whole.className = "sr-only"; whole.textContent = text; el.appendChild(whole);
     var typed = document.createElement("span"); typed.setAttribute("aria-hidden", "true"); el.appendChild(typed);
     // every character gets its own span, so the line keeps its final size while it types
     var chars = text.split("").map(function (c) {
-      var s = document.createElement("span"); s.className = "ch"; s.textContent = c; typed.appendChild(s); return s;
+      var s = document.createElement("span"); s.className = "ch"; s.textContent = c;
+      typed.appendChild(s); return s;
     });
+    var caret = document.createElement("span"); caret.className = "type-caret";
+    typed.appendChild(caret);
     if (reduceMotion) return;
 
-    var caret = document.createElement("span"); caret.className = "type-caret";
-    // after typing, the caret blinks three times and goes away (nothing blinks for more than 5 seconds)
-    caret.addEventListener("animationend", function () { caret.remove(); });
     el.classList.add("is-typing");
     typed.insertBefore(caret, chars[0]);
     var i = 0;
@@ -110,14 +82,14 @@
       typed.insertBefore(caret, chars[i].nextSibling);
       var c = chars[i].textContent; i++;
       if (i >= chars.length) { el.classList.remove("is-typing"); return; }
-      // a quick, human-ish rhythm: a small beat after each word and at punctuation (about 2 seconds in all)
-      var d = 18 + Math.random() * 12;
-      if (c === " ") d += 30;
-      if (c === "," || c === ".") d += 120;
+      // a human-ish rhythm: quick keys, a beat after each word and at punctuation
+      var d = 34 + Math.random() * 38;
+      if (c === " ") d += 40;
+      if (c === "," || c === ".") d += 180;
       setTimeout(step, d);
     }
     var started = false;
-    function begin() { if (!started) { started = true; setTimeout(step, 300); } }
+    function begin() { if (!started) { started = true; setTimeout(step, 450); } }
     if ("IntersectionObserver" in window) {
       var io = new IntersectionObserver(function (es) {
         if (es[0].isIntersecting) { io.disconnect(); begin(); }
@@ -202,10 +174,7 @@
     // play the first question once the sample scrolls into view, so it isn't sitting empty
     if (!reduceMotion && "IntersectionObserver" in window) {
       var io = new IntersectionObserver(function (es) {
-        if (es[0].isIntersecting) {
-          io.disconnect();
-          setTimeout(function () { story.whenIdle(function () { if (tab === "site" && btns[0] && !btns[0].disabled && !busy) ask(SETS.site.qa[0], btns[0]); }); }, 700);
-        }
+        if (es[0].isIntersecting) { io.disconnect(); setTimeout(function () { if (tab === "site" && btns[0] && !btns[0].disabled && !busy) ask(SETS.site.qa[0], btns[0]); }, 700); }
       }, { threshold: 0.6 });
       io.observe(log);
     }
@@ -223,142 +192,16 @@
   })();
 
   /* =====================================================================
-     STORY LAYER: the page reads as one project, in Lee's own four steps
-     01 discuss -> 02 define -> 03 build -> 04 deliver -> your turn.
-     Everything starts finished. html.story is added last, and only the parts
-     still below the fold wait to play, once each. Phones, reduced motion and
-     no-JS visitors get the finished page (the CSS keeps all "before" states
-     under html.story).
+     SCROLL REVEAL
      ===================================================================== */
-  (function storyLayer() {
-    var scene = codeScene();   // the cafe mock's source view and its toggle (any desktop, motion or not)
-    if (!story.on) return;
-    function start() {
-      reveals(); beats(); if (scene) scene.arm(); buildLog();
-      document.documentElement.classList.add("story");
-    }
-    // after load, so a reload or a jump to #contact has already put the page where it's going
-    if (document.readyState === "complete") start(); else window.addEventListener("load", start);
-
-    // Supporting visuals (cards, app cards, screenshots) arrive once, quickly. Copy never animates.
-    function reveals() {
-      once($$(".card:not(.dev-card), .app-card, .shot"), function (el, already) {
-        // skipped past (a fast flick or a jump): just be there, no entrance
-        if (already) { el.classList.remove("reveal"); el.style.removeProperty("--i"); return; }
-        el.classList.add("is-in");
-        // once it has landed, hand the element back its own hover transitions
-        setTimeout(function () { el.classList.remove("reveal", "is-in"); el.style.removeProperty("--i"); }, 600);
-      }, { rootMargin: "0px 0px -8% 0px" }).forEach(function (el) {
-        el.classList.add("reveal");
-        el.style.setProperty("--i", Math.min(3, Array.prototype.indexOf.call(el.parentNode.children, el)));
-      });
-    }
-
-    function beats() {
-      // 02 define: the "+" line of the Monday report lands
-      once($$(".diff"), function (el) { el.classList.add("is-in"); }, { rootMargin: "0px 0px -35% 0px" });
-      // 04 deliver: each Live dot pings once
-      once($$(".status-live"), function (el, already) {
-        if (already) return;
-        var k = $$(".status-live").indexOf(el);
-        setTimeout(function () { el.classList.add("is-in"); }, Math.max(0, k) * 150);
-      }, { threshold: 1 });
-      // About: the four step rules draw in, like checks passing
-      $$("#about .step").forEach(function (el, i) { el.style.setProperty("--i", i); });
-      once($$("#about .steps"), function (el) { el.classList.add("is-in"); }, { threshold: 0.5 });
-      // your turn: the cursor after "fits." blinks three times
-      once($$("#contact .caret-end"), function (el, already) { if (!already) el.classList.add("is-in"); }, { rootMargin: "0px 0px -35% 0px" });
-    }
-
-    // A quiet git log in the left margin (wide screens): one commit per chapter, current one named.
-    function buildLog() {
-      if (!window.matchMedia("(min-width: 1440px)").matches) return;
-      var chapters = [["#top", "0"], [".mission", "1"], ["#work-together", "2"], ["#tools", "2"], ["#build", "3"], ["#assistants", "3"],
-                      ["#applications", "4"], ["#partnership", "4"], ["#about", "done"], ["#contact", "5"]];
-      var log = document.createElement("div"); log.className = "buildlog"; log.setAttribute("aria-hidden", "true");
-      var ol = document.createElement("ol");
-      var nodes = ["01 discuss", "02 define", "03 build", "04 deliver", "your turn"].map(function (name, i) {
-        var li = document.createElement("li"); li.style.setProperty("--n", i); if (i === 4) li.className = "turn";
-        var label = document.createElement("span"); label.textContent = name; li.appendChild(label); ol.appendChild(li); return li;
-      });
-      log.appendChild(ol); document.body.appendChild(log);
-      function set(phase) {
-        // "done" (About): all four steps are complete and the steps list there takes over the naming
-        var cur = phase === "done" ? -1 : +phase - 1, reached = phase === "done" ? 4 : +phase - 1;
-        log.dataset.phase = phase;
-        nodes.forEach(function (li, i) { li.classList.toggle("is-current", i === cur); li.classList.toggle("is-done", i < reached && i !== cur); });
-        log.style.setProperty("--fill", String(Math.max(0, Math.min(4, phase === "done" ? 3 : reached)) / 4));
-      }
-      // a thin band 45% down the screen: whichever chapter crosses it is the one you're reading
-      var io = new IntersectionObserver(function (es) {
-        es.forEach(function (e) { if (e.isIntersecting) set(e.target.dataset.chapter); });
-      }, { rootMargin: "-45% 0px -54% 0px" });
-      chapters.forEach(function (c) { var el = $(c[0]); if (el) { el.dataset.chapter = c[1]; io.observe(el); } });
-    }
+  (function reveal() {
+    if (reduceMotion || !("IntersectionObserver" in window)) return;
+    var els = $$(".section-head, .card:not(.dev-card), .step, .points li, .callout, .app-card, .split > div, .cta-band, .mission-grid, .price-strip, .dev-drawer, .shot, .plan, .faq-item");
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("is-in"); io.unobserve(e.target); } });
+    }, { threshold: 0.08, rootMargin: "0px 0px -40px 0px" });
+    els.forEach(function (el) { el.classList.add("reveal"); io.observe(el); });
   })();
-
-  // 03 build: the Harbor Cafe mock shows its own source, then the code becomes the site.
-  // The toggle lets the reader flip between them any time (desktop only; phones keep the plain mock).
-  function codeScene() {
-    var browser = $("#build .browser"), toggle = $("#build .code-toggle"), pill = $("#build [data-pill]");
-    if (!browser || !toggle || !window.matchMedia("(min-width: 961px)").matches) return null;
-    // built only from the mock's own copy: tag, attribute, string, plain text
-    var LINES = [
-      [["tg", "<nav>"], ["", "Harbor Café · Menu · Catering · Visit"], ["tg", "</nav>"]],
-      [["tg", "<p "], ["at", "class"], ["tg", "="], ["st", "\"kicker\""], ["tg", ">"], ["", "Open daily · 7am to 3pm"], ["tg", "</p>"]],
-      [["tg", "<h1>"], ["", "Fresh bread and good coffee,"]],
-      [["", "    right on the harbor."], ["tg", "</h1>"]],
-      [["tg", "<a "], ["at", "class"], ["tg", "="], ["st", "\"btn\""], ["tg", ">"], ["", "Order ahead"], ["tg", "</a> <a>"], ["", "Book a table"], ["tg", "</a>"]],
-      [["tg", "<article>"], ["", "Breakfast · Served until 11"], ["tg", "</article>"]],
-      [["tg", "<article>"], ["", "Catering · Groups of 10+"], ["tg", "</article>"]],
-      [["tg", "<article>"], ["", "Find us · 14 Pier Street"], ["tg", "</article>"]],
-      [["tg", "<chat-bot "], ["at", "greeting"], ["tg", "="], ["st", "\"Hi! Ask me about hours,"]],
-      [["st", "          the menu, or catering.\""], ["tg", "></chat-bot>"]]
-    ];
-    var fig = document.createElement("figure"); fig.className = "src"; fig.setAttribute("aria-label", "Sample HTML for the Harbor Café site");
-    var pre = document.createElement("pre");
-    LINES.forEach(function (line, i) {
-      var ln = document.createElement("span"); ln.className = "ln";
-      var lc = document.createElement("span"); lc.className = "lc"; lc.style.setProperty("--i", i);
-      line.forEach(function (tok) { var t = document.createElement("span"); if (tok[0]) t.className = tok[0]; t.textContent = tok[1]; lc.appendChild(t); });
-      ln.appendChild(lc); pre.appendChild(ln);
-    });
-    fig.appendChild(pre); browser.appendChild(fig);
-
-    var siteName = pill ? pill.textContent : "", timers = [], running = false;
-    function label(code) { if (pill) pill.textContent = code ? "index.html" : siteName; }
-    function stop() { timers.forEach(clearTimeout); timers = []; if (running) { running = false; story.idle(); } }
-    function show(code) {   // the reader's choice: jumps straight to that view
-      stop();
-      browser.classList.remove("armed", "site-off", "chat-off");
-      browser.classList.add("coding");
-      browser.classList.toggle("src-on", code);
-      toggle.setAttribute("aria-pressed", String(code));
-      label(code);
-    }
-    toggle.hidden = false;
-    toggle.addEventListener("click", function () { show(toggle.getAttribute("aria-pressed") !== "true"); });
-    document.addEventListener("visibilitychange", function () { if (document.hidden && running) show(false); });
-
-    function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
-    function play() {   // about 1.5 seconds, once: ten lines arrive, a short hold, then the site takes their place
-      running = true; story.busy = true;
-      browser.classList.add("coding");
-      var built = LINES.length * 60 + 180 + 250;
-      at(built, function () { browser.classList.remove("src-on", "site-off"); label(false); });
-      at(built + 150, function () { browser.classList.remove("chat-off"); });
-      at(built + 420, function () { browser.classList.remove("armed"); running = false; story.idle(); });
-    }
-    return {
-      arm: function () {
-        // skipped past or already on screen: show the finished site
-        once([browser], function (el, already) { if (already) show(false); else play(); }, { threshold: 0.6 }).forEach(function () {
-          // still below the fold: wait as an empty editor
-          browser.classList.add("armed", "src-on", "site-off", "chat-off"); label(true);
-        });
-      }
-    };
-  }
 
   /* =====================================================================
      CONTACT FORM (delivers to CONTACT_EMAIL through FormSubmit; falls back to email)
@@ -423,7 +266,6 @@
           form.reset(); applyMode();
           statusEl.textContent = call ? "Thanks! Your call request was sent. I'll reply by email to set a time." : "Thanks! Your message was sent. I'll reply by email soon.";
           statusEl.className = "form-status is-success";
-          document.documentElement.setAttribute("data-sent", "1");
         })
         .catch(function () {
           // If the form service can't be reached, hand off to the visitor's own email app instead
