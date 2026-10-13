@@ -54,6 +54,46 @@
   });
 
   /* =====================================================================
+     DESKTOP: the hero sentence is set like code and types itself out, with a
+     block cursor left blinking at the end of it. Screen readers get the sentence
+     once, whole; with reduced motion it just appears, cursor included (solid).
+     ===================================================================== */
+  (function typeLead() {
+    var el = $(".hero .lead");
+    if (!el || !window.matchMedia("(min-width: 721px)").matches) return;
+    var text = el.textContent.trim();
+    el.textContent = "";
+    el.classList.add("is-code");
+    var whole = document.createElement("span"); whole.className = "sr-only"; whole.textContent = text; el.appendChild(whole);
+    var typed = document.createElement("span"); typed.setAttribute("aria-hidden", "true"); el.appendChild(typed);
+    // every character gets its own span, so the line keeps its final shape while it types
+    var chars = text.split("").map(function (c) {
+      var s = document.createElement("span"); s.className = "ch"; s.textContent = c; typed.appendChild(s); return s;
+    });
+    var caret = document.createElement("span"); caret.className = "lead-caret"; typed.appendChild(caret);
+    if (reduceMotion) return;
+
+    el.classList.add("is-typing");
+    typed.insertBefore(caret, chars[0]);
+    var i = 0;
+    function step() {
+      chars[i].classList.add("on");
+      typed.insertBefore(caret, chars[i].nextSibling);
+      var c = chars[i].textContent; i++;
+      if (i >= chars.length) { el.classList.remove("is-typing"); return; }
+      // quick keys, a small beat after each word and at punctuation: about two and a half seconds in all
+      var d = 14 + Math.random() * 16;
+      if (c === " ") d += 24;
+      if (c === "," || c === ".") d += 140;
+      setTimeout(step, d);
+    }
+    // wait for the code font, so the line doesn't reflow while it types
+    var started = false;
+    function begin() { if (!started) { started = true; setTimeout(step, 350); } }
+    if (document.fonts && document.fonts.ready) { document.fonts.ready.then(begin); setTimeout(begin, 1200); } else begin();
+  })();
+
+  /* =====================================================================
      PHONES: the mission statement types itself out like code
      (phones only)
      ===================================================================== */

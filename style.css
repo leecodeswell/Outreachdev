@@ -206,13 +206,17 @@ a { color: var(--accent); text-decoration: none; }
 .hero-copy .eyebrow::after { content: ""; width: 24px; height: 1px; background: var(--accent-line); }
 .hero h1 { margin-bottom: var(--s-3); }
 .hero .lead { max-width: 600px; margin: 0 auto var(--s-5); }
-/* The hero cursor: a block cursor on its own line under the headline, blinking for as long as you're here.
-   (Reduced-motion visitors get it solid, since the reduce rule below stops all animation; phones and very short windows don't get it.) */
-.hero-caret {
-  display: block; width: 0.4em; height: 0.78em; margin: 0.14em auto 0;
-  background: #8C8C97; opacity: 0.6; animation: caret-blink 1.05s steps(1, end) infinite;
+/* Desktop: the hero sentence is set like code and types itself out (script.js adds .is-code); a block cursor
+   waits at the end of it, blinking for as long as you're here. Phones keep the plain sentence. */
+@media (min-width: 721px) {
+  .hero .lead.is-code { max-width: 700px; font-family: var(--mono); font-size: 1.125rem; line-height: 1.75; letter-spacing: -0.01em; text-wrap: balance; }
+  .lead.is-typing .ch { opacity: 0; }
+  .lead.is-typing .ch.on { opacity: 1; }
+  /* zero-width, so the cursor never nudges the words around as it moves */
+  .lead-caret { display: inline-block; position: relative; width: 0; height: 1em; animation: caret-blink 1.05s steps(1, end) infinite; }
+  .lead-caret::after { content: ""; position: absolute; left: 3px; top: -0.12em; width: 0.58em; height: 1.2em; background: #D9D9DF; }
+  .lead.is-typing .lead-caret { animation: none; }
 }
-@media (max-width: 720px), (max-height: 520px) { .hero-caret { display: none; } }
 .hero-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-2); }
 
 /* ---------- Mission ---------- */
