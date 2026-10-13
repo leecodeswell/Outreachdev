@@ -22,9 +22,9 @@ window.WO_FIREBASE_CONFIG = {
 
 /* Plans and prices shown in the app. Change them here any time.
    url: the Payment Link from Stripe for that product (null until you have it).
-   If you change trialDays, change the "14" in firestore.rules too. */
+   If you change trialDays, change the "7" in firestore.rules too (it is currently 7 days). */
 window.WO_BILLING = {
-  trialDays: 14,
+  trialDays: 7,
   contact: "thompsontechnologiesleet@gmail.com",
   plans: [
     { id: "lifetime", label: "Pay once", price: "$60", per: "one time", note: "Unlimited team members. Updates to version 1 included.", url: "https://buy.stripe.com/fZu14ncJ240380we7E2wU05" },

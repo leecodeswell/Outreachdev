@@ -19,9 +19,9 @@ window.SA_FIREBASE_CONFIG = {
 
 /* Plans and prices shown in the app. Change them here any time.
    url: the Payment Link from Stripe for that product (leave null until you have it).
-   If you change trialDays, change the "14" in firestore.rules too. */
+   If you change trialDays, change the "7" in firestore.rules too (it is currently 7 days). */
 window.SA_BILLING = {
-  trialDays: 14,
+  trialDays: 7,
   contact: "thompsontechnologiesleet@gmail.com",
   plans: [
     { id: "lifetime", label: "Pay once", price: "$60", per: "one time", note: "Use it for as long as you like. Updates to version 1 included.", url: "https://buy.stripe.com/cNi5kDdN67cf2GcgfM2wU02" },

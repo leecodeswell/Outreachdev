@@ -182,7 +182,7 @@
      Plans: free trial, then paid (same model as Scheduling Agent)
      --------------------------------------------------------------- */
   var BILL = window.WO_BILLING || {};
-  St.trialDays = BILL.trialDays || 14;
+  St.trialDays = BILL.trialDays || 7;
   St.access = function () {
     if (St.mode === "local") return { state: "local" };
     var b = St.data.billing || {}, org = St.data.org || {};

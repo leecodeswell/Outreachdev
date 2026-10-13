@@ -1678,7 +1678,7 @@
       if (T.importLocal == null) T.importLocal = !!has;
       return h + "<h1>Create your workspace</h1><p>This is where your team, shifts and schedules will live. You can invite your team once it's set up.</p></div><div class=\"ob-body\">" + err +
         (has ? '<label class="q" style="cursor:pointer"><input type="checkbox" data-change="au-import"' + (T.importLocal ? " checked" : "") + '><span class="txt"><b>Bring in what\'s saved in this browser</b><span>' + esc(browserData.business.name || "Your setup") + " · " + people(browserData.people.length) + " · " + plural(browserData.shifts.length, "shift") + "</span></span></label>" : "") +
-        '<div class="note">' + icon("sparkle") + "<span>Free for " + ((window.SA_BILLING || {}).trialDays || 14) + " days. No card needed.</span></div>" +
+        '<div class="note">' + icon("sparkle") + "<span>Free for " + ((window.SA_BILLING || {}).trialDays || 7) + " days. No card needed.</span></div>" +
         '<div class="note">' + icon("user") + "<span>Signed in as " + esc((C.user && C.user.email) || "") + '. <a href="#" data-act="sign-out">Not you?</a></span></div></div>' +
         '<div class="ob-foot"><span class="spacer"></span><button class="btn btn-primary" data-act="au-create">Create my workspace</button></div></div></div>';
     }
