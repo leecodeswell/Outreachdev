@@ -836,9 +836,16 @@ button.chip-open:hover { border-color: var(--accent); }
     content: ""; display: inline-block; width: 0.48em; height: 0.8em; margin-left: 0.1em; vertical-align: -0.02em;
     background: currentColor; opacity: 0.6;
   }
-  .hero .caret-end::after { animation: caret-blink 1.05s steps(1, end) 600ms 3; }
   html.story #contact .caret-end.is-in::after { animation: caret-blink 1.05s steps(1, end) 3; }
 }
+
+/* The hero cursor: a block cursor on its own line under the headline, blinking for as long as you're here.
+   (Reduced-motion visitors get it solid; phones and very short windows don't get it.) */
+.hero-caret {
+  display: block; width: 0.4em; height: 0.78em; margin: 0.14em auto 0;
+  background: #8C8C97; opacity: 0.6; animation: caret-blink 1.05s steps(1, end) infinite;
+}
+@media (max-width: 720px), (max-height: 520px) { .hero-caret { display: none; } }
 
 /* 02 define: the Monday report, before and after (decorative, wide screens only) */
 .diff { display: none; }
