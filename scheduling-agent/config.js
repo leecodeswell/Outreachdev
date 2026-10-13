@@ -19,7 +19,7 @@ window.SA_FIREBASE_CONFIG = {
 
 /* Plans and prices shown in the app. Change them here any time.
    url: the Payment Link from Stripe for that product (leave null until you have it).
-   If you change trialDays, change the "7" in firestore.rules too (it is currently 7 days). */
+   Keep this the same as the trial length in firestore.rules (search that file for "created"); if you change one, change the other. */
 window.SA_BILLING = {
   trialDays: 7,
   contact: "thompsontechnologiesleet@gmail.com",
