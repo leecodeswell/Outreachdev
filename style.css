@@ -607,7 +607,7 @@ button.chip-open:hover { border-color: var(--accent); }
 .build-cta { margin-top: var(--s-3); }
 
 /* Browser + phone composition */
-.devices { position: relative; padding: 0 0 var(--s-8) 0; }
+.devices { position: relative; padding: 0 0 150px 0; }
 .browser { width: 84%; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow), var(--purple-glow); }
 .frame-bar { display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; background: #17171B; border-bottom: 1px solid var(--line); }
 .frame-bar i { width: 9px; height: 9px; border-radius: 50%; background: #34343B; }
@@ -616,19 +616,20 @@ button.chip-open:hover { border-color: var(--accent); }
 .ms-nav { display: flex; align-items: center; gap: 14px; font-size: 11px; color: #6B5E4D; }
 .ms-nav b { font-family: "Space Grotesk", "Inter", sans-serif; font-size: 14px; color: #2B241B; margin-right: auto; letter-spacing: -0.01em; }
 .ms-nav em, .ms-btns em { font-style: normal; background: #2F5D50; color: #fff; padding: 5px 10px; border-radius: 999px; font-weight: 600; }
-.ms-hero { padding: 26px 0 18px; max-width: 360px; }
+.ms-hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 16px; align-items: center; padding: 20px 0 16px; }
+.ms-pic { position: relative; }
+.ms-pic svg { display: block; width: 100%; height: auto; aspect-ratio: 200 / 140; border-radius: 12px; border: 1.6px solid #2B241B; box-shadow: 3px 3px 0 #2B241B; }
+.ms-rating { position: absolute; left: -10px; bottom: -10px; background: #fff; border: 1.4px solid #2B241B; border-radius: 999px; padding: 3px 8px; font-size: 9.5px; font-weight: 600; color: #2B241B; white-space: nowrap; box-shadow: 2px 2px 0 #2B241B; }
+.ms-rating i { font-style: normal; color: #E39B2E; letter-spacing: 0.5px; }
 .ms-kicker { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #8A6F3E; font-weight: 600; }
-.ms-h { font-family: "Space Grotesk", "Inter", sans-serif; font-size: 25px; line-height: 1.12; letter-spacing: -0.02em; color: #2B241B; margin: 8px 0 14px; font-weight: 600; }
+.ms-h { font-family: "Space Grotesk", "Inter", sans-serif; font-size: 21px; line-height: 1.12; letter-spacing: -0.02em; color: #2B241B; margin: 8px 0 14px; font-weight: 600; }
 .ms-btns { display: flex; gap: 8px; font-size: 11px; }
 .ms-btns span { border: 1px solid #CDBFA9; padding: 4px 10px; border-radius: 999px; color: #2B241B; font-weight: 600; }
 .ms-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.ms-cards div { background: #fff; border-radius: 10px; padding: 8px; display: grid; gap: 2px; box-shadow: 0 1px 2px rgba(60, 40, 10, 0.08); }
+.ms-cards div { background: #fff; border-radius: 10px; padding: 8px; display: grid; gap: 2px; border: 1.4px solid #2B241B; box-shadow: 2px 2px 0 #2B241B; }
 .ms-cards b { font-size: 11.5px; color: #2B241B; } .ms-cards span { font-size: 10px; color: #8C7F6C; }
-.ms-img { display: block; height: 52px; border-radius: 6px; margin-bottom: 6px; }
-.ms-img.a { background: linear-gradient(135deg, #E9C99A, #C98F52); }
-.ms-img.b { background: linear-gradient(135deg, #B8CDB8, #5F8A72); }
-.ms-img.c { background: linear-gradient(135deg, #A9C3D6, #557A99); }
-.devices .phone { position: absolute; right: 0; bottom: 0; width: 30%; max-width: 190px; border-radius: 26px; padding: 7px; background: #0E0E11; border: 1px solid #2E2E35; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6); }
+.ms-img { display: block; width: 100%; height: 58px; border-radius: 6px; margin-bottom: 6px; border: 1.4px solid #2B241B; }
+.devices .phone { position: absolute; right: 0; bottom: 0; width: 24%; max-width: 170px; border-radius: 26px; padding: 7px; background: #0E0E11; border: 1px solid #2E2E35; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6); }
 .devices .phone img { width: 100%; height: auto; border-radius: 20px; }
 
 /* Applications */
@@ -749,7 +750,10 @@ button.chip-open:hover { border-color: var(--accent); }
   .app-actions .text-link { margin: var(--s-1) 0 0; width: 100%; }
   .mini-site { min-height: 300px; padding: 12px 12px 18px; }
   .ms-nav span { display: none; }
-  .ms-h { font-size: 20px; }
+  .ms-h { font-size: 17px; }
+  .ms-hero { grid-template-columns: 1fr; gap: 14px; }
+  .ms-pic { max-width: 300px; }
+  .ms-btns em, .ms-btns span { white-space: nowrap; }
     .devices { padding-bottom: var(--s-6); }
   .browser { width: 88%; }
   .devices .phone { width: 34%; right: 0; border-radius: 20px; padding: 5px; }

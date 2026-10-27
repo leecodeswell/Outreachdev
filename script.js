@@ -245,7 +245,7 @@
       if (!form) return;
       var topic = el.getAttribute("data-ask"), sel = form.elements.interest, msg = form.elements.message;
       setContactMode("question");
-      var map = { "Quote Builder": "An app under development", "Instructions Database": "An app under development", "Catering & Order Management": "An app under development", "A website": "A website", "Online visibility and marketing": "Online visibility and marketing", "AI tools and integration": "AI tools and integration" };
+      var map = { "Quote Builder": "An app under development", "Instructions Database": "An app under development", "Catering & Order Management": "An app under development", "A website": "A website", "Online visibility and marketing": "Website design and online visibility", "AI tools and integration": "AI tools and integration" };
       if (sel) { var want = map[topic] || (/Tailoring/.test(topic) ? "Not sure yet" : topic); Array.prototype.forEach.call(sel.options, function (o) { if (o.text === want) sel.value = o.value; }); }
       if (msg && !msg.value.trim()) msg.value = /^(Quote|Instructions|Catering)/.test(topic) ? "I'd like to hear more about " + topic + "." : /Tailoring/.test(topic) ? "I'd like a version of one of your apps tailored to my business." : "";
       setTimeout(function () { var n = form.elements.name; if (n) n.focus({ preventScroll: true }); }, 600);
