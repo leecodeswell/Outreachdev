@@ -53,6 +53,26 @@
     else a.addEventListener("click", function () { setContactMode("call"); });
   });
 
+  /* ---------- Typing effect, shared by the hero and the phone mission line ----------
+     Each character's reveal time is worked out up front, then requestAnimationFrame shows
+     whatever is due on every frame. Timers can't fire faster than the screen draws, so this
+     keeps the typing smooth and on pace instead of bunching up when the page is busy. */
+  function typeOut(chars, caret, delayFor, done) {
+    return function () {
+      var at = [], t = 0;
+      chars.forEach(function (ch) { at.push(t); t += delayFor(ch.textContent); });
+      var i = 0, t0 = null;
+      function frame(now) {
+        if (t0 === null) t0 = now;
+        var due = now - t0, last = i;
+        while (i < chars.length && at[i] <= due) chars[i++].classList.add("on");
+        if (i !== last) chars[i - 1].parentNode.insertBefore(caret, chars[i - 1].nextSibling);
+        if (i < chars.length) requestAnimationFrame(frame); else if (done) done();
+      }
+      requestAnimationFrame(frame);
+    };
+  }
+
   /* =====================================================================
      DESKTOP: the hero sentence is set like code and types itself out, with a
      block cursor left blinking at the end of it. Screen readers get the sentence
@@ -75,21 +95,12 @@
 
     el.classList.add("is-typing");
     typed.insertBefore(caret, chars[0]);
-    var i = 0;
-    function step() {
-      chars[i].classList.add("on");
-      typed.insertBefore(caret, chars[i].nextSibling);
-      var c = chars[i].textContent; i++;
-      if (i >= chars.length) { el.classList.remove("is-typing"); return; }
-      // quick keys, a small beat after each word and at punctuation: about two and a half seconds in all
-      var d = 14 + Math.random() * 16;
-      if (c === " ") d += 24;
-      if (c === "," || c === ".") d += 140;
-      setTimeout(step, d);
-    }
+    // quick keys, a small beat after each word and at punctuation: about two and a half seconds in all
+    var run = typeOut(chars, caret, function (c) { return 14 + Math.random() * 16 + (c === " " ? 24 : 0) + (c === "," || c === "." ? 140 : 0); },
+      function () { el.classList.remove("is-typing"); });
     // wait for the code font, so the line doesn't reflow while it types
     var started = false;
-    function begin() { if (!started) { started = true; setTimeout(step, 350); } }
+    function begin() { if (!started) { started = true; setTimeout(run, 350); } }
     if (document.fonts && document.fonts.ready) { document.fonts.ready.then(begin); setTimeout(begin, 1200); } else begin();
   })();
 
@@ -116,108 +127,17 @@
 
     el.classList.add("is-typing");
     typed.insertBefore(caret, chars[0]);
-    var i = 0;
-    function step() {
-      chars[i].classList.add("on");
-      typed.insertBefore(caret, chars[i].nextSibling);
-      var c = chars[i].textContent; i++;
-      if (i >= chars.length) { el.classList.remove("is-typing"); return; }
-      // a human-ish rhythm: quick keys, a beat after each word and at punctuation
-      var d = 34 + Math.random() * 38;
-      if (c === " ") d += 40;
-      if (c === "," || c === ".") d += 180;
-      setTimeout(step, d);
-    }
+    // a human-ish rhythm: quick keys, a beat after each word and at punctuation
+    var run = typeOut(chars, caret, function (c) { return 34 + Math.random() * 38 + (c === " " ? 40 : 0) + (c === "," || c === "." ? 180 : 0); },
+      function () { el.classList.remove("is-typing"); });
     var started = false;
-    function begin() { if (!started) { started = true; setTimeout(step, 450); } }
+    function begin() { if (!started) { started = true; setTimeout(run, 450); } }
     if ("IntersectionObserver" in window) {
       var io = new IntersectionObserver(function (es) {
         if (es[0].isIntersecting) { io.disconnect(); begin(); }
       }, { threshold: 0.6 });
       io.observe(el);
     } else begin();
-  })();
-
-  /* =====================================================================
-     AI CHATBOT SAMPLES: a website chatbot and an in-app helper
-     ===================================================================== */
-  (function chat() {
-    var log = $("[data-chat-log]"), list = $("[data-chat-suggest]"), reset = $("[data-chat-reset]"), meta = $("[data-chat-meta]");
-    if (!log || !list) return;
-    var SETS = {
-      site: {
-        hello: "Hi! Ask me anything about Harbor Café.",
-        meta: "Sample answers for an invented café.",
-        qa: [
-          { q: "What are your hours on Sunday?", a: "On Sundays we’re open 9 am to 3 pm. The kitchen closes at 2:30 pm.", src: "Hours and location" },
-          { q: "Do you have gluten-free options?", a: "Yes. Gluten-free dishes are marked GF on the menu, and many others can be adapted. Please mention any allergies when you order.", src: "Menu and allergen policy" },
-          { q: "Can I book a table for 12?", a: "Groups of 8 or more need a reservation at least 48 hours ahead. I’ve passed your request to the manager, who will confirm with you.", src: "Reservations policy" },
-          { q: "Do you cater weddings?", a: "I don’t have information about wedding catering, so I won’t guess. I’ve passed your question to the owner.", handoff: true }
-        ]
-      },
-      app: {
-        hello: "Hi! I can answer questions about this week’s schedule and suggest changes. Nothing changes until you approve it.",
-        meta: "Sample of the helper inside Scheduling Agent, with an invented team.",
-        qa: [
-          { q: "Ben can’t work Friday. Who can cover?", a: "Gus and Eli are free Friday evening and under their max hours. Gus prefers closing shifts, so he’s the best fit.",
-            change: [["Friday close", "Ben → Gus"], ["Gus’s hours", "24 → 29 of 30"]] },
-          { q: "Who’s closest to their max hours?", a: "Dev is at 34 of 36 hours and Ava at 30 of 36. Everyone else has at least 6 hours of room this week.", src: "This week’s schedule" },
-          { q: "Give Cara next Saturday off.", a: "Here’s the change. Her Saturday mid shift goes to Fay, who prefers weekends.",
-            change: [["Cara, Saturday", "Marked off"], ["Saturday mid", "Cara → Fay"]] },
-          { q: "Can you make Hana a manager?", a: "That’s a change to her roles, which only you can make in Team. I can explain how if you’d like.", handoff: true, handoffText: "Outside what the helper is allowed to change." }
-        ]
-      }
-    };
-    var tab = "site", busy = false, btns = [], timer = null;
-    var docIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7zM14 3v4h4"/></svg>';
-    var handIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h14M13 6l6 6-6 6"/></svg>';
-    function add(cls, text) { var m = document.createElement("div"); m.className = "msg " + cls; m.textContent = text; log.appendChild(m); log.scrollTop = log.scrollHeight; return m; }
-    function proposal(rows) {
-      var box = document.createElement("div"); box.className = "proposal";
-      rows.forEach(function (r) { var row = document.createElement("div"); row.className = "proposal-row"; var a = document.createElement("span"); a.textContent = r[0]; var b = document.createElement("b"); b.textContent = r[1]; row.appendChild(a); row.appendChild(b); box.appendChild(row); });
-      var bt = document.createElement("div"); bt.className = "proposal-btns";
-      bt.innerHTML = '<span class="go">Apply</span><span>Dismiss</span>';
-      box.appendChild(bt);
-      timer = setTimeout(function () { bt.innerHTML = '<span class="done">Applied by owner</span>'; log.scrollTop = log.scrollHeight; }, reduceMotion ? 0 : 1600);
-      return box;
-    }
-    function ask(item, btn) {
-      if (busy) return; busy = true; btn.disabled = true; reset.hidden = false;
-      add("msg-user", item.q);
-      var reply = add("msg-bot", ""); reply.innerHTML = '<span class="typing" aria-label="Assistant is typing"><i></i><i></i><i></i></span>';
-      timer = setTimeout(function () {
-        reply.textContent = item.a;
-        if (item.change) reply.appendChild(proposal(item.change));
-        else {
-          var src = document.createElement("div"); src.className = "msg-src" + (item.handoff ? " is-handoff" : "");
-          src.innerHTML = item.handoff ? handIcon : docIcon;
-          var sp = document.createElement("span"); sp.textContent = item.handoff ? (item.handoffText || "Not in the approved information. Handed to a person.") : "Source: " + item.src;
-          src.appendChild(sp); reply.appendChild(src);
-        }
-        log.scrollTop = log.scrollHeight; busy = false;
-      }, reduceMotion ? 0 : 900);
-    }
-    function load(t) {
-      tab = t; clearTimeout(timer); busy = false;
-      $$("[data-chat-tab]").forEach(function (b) { var on = b.dataset.chatTab === t; b.classList.toggle("is-active", on); b.setAttribute("aria-selected", String(on)); });
-      log.textContent = ""; list.textContent = ""; reset.hidden = true;
-      if (meta) meta.textContent = SETS[t].meta;
-      add("msg-bot", SETS[t].hello);
-      btns = SETS[t].qa.map(function (item) {
-        var b = document.createElement("button"); b.type = "button"; b.className = "suggest"; b.textContent = item.q;
-        b.addEventListener("click", function () { ask(item, b); }); list.appendChild(b); return b;
-      });
-    }
-    $$("[data-chat-tab]").forEach(function (b) { b.addEventListener("click", function () { if (b.dataset.chatTab !== tab) load(b.dataset.chatTab); }); });
-    reset.addEventListener("click", function () { load(tab); });
-    load("site");
-    // play the first question once the sample scrolls into view, so it isn't sitting empty
-    if (!reduceMotion && "IntersectionObserver" in window) {
-      var io = new IntersectionObserver(function (es) {
-        if (es[0].isIntersecting) { io.disconnect(); setTimeout(function () { if (tab === "site" && btns[0] && !btns[0].disabled && !busy) ask(SETS.site.qa[0], btns[0]); }, 700); }
-      }, { threshold: 0.6 });
-      io.observe(log);
-    }
   })();
 
   /* =====================================================================
@@ -325,7 +245,7 @@
       if (!form) return;
       var topic = el.getAttribute("data-ask"), sel = form.elements.interest, msg = form.elements.message;
       setContactMode("question");
-      var map = { "Quote Builder": "An app under development", "Instructions Database": "An app under development", "Catering & Order Management": "An app under development", "A website or custom app": "A custom web app", "A single feature or small tool": "A small tool" };
+      var map = { "Quote Builder": "An app under development", "Instructions Database": "An app under development", "Catering & Order Management": "An app under development", "A website": "A website", "Online visibility and marketing": "Online visibility and marketing", "AI tools and integration": "AI tools and integration" };
       if (sel) { var want = map[topic] || (/Tailoring/.test(topic) ? "Not sure yet" : topic); Array.prototype.forEach.call(sel.options, function (o) { if (o.text === want) sel.value = o.value; }); }
       if (msg && !msg.value.trim()) msg.value = /^(Quote|Instructions|Catering)/.test(topic) ? "I'd like to hear more about " + topic + "." : /Tailoring/.test(topic) ? "I'd like a version of one of your apps tailored to my business." : "";
       setTimeout(function () { var n = form.elements.name; if (n) n.focus({ preventScroll: true }); }, 600);

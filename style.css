@@ -209,12 +209,12 @@ a { color: var(--accent); text-decoration: none; }
 /* Desktop: the hero sentence is set like code and types itself out (script.js adds .is-code); a block cursor
    waits at the end of it, blinking for as long as you're here. Phones keep the plain sentence. */
 @media (min-width: 721px) {
-  .hero .lead.is-code { max-width: 700px; font-family: var(--mono); font-size: 1.125rem; line-height: 1.75; letter-spacing: -0.01em; text-wrap: balance; }
+  .hero .lead.is-code { max-width: 700px; font-family: var(--mono); font-size: 18px; line-height: 32px; letter-spacing: 0; text-wrap: balance; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: geometricPrecision; font-kerning: none; }
   .lead.is-typing .ch { opacity: 0; }
   .lead.is-typing .ch.on { opacity: 1; }
   /* zero-width, so the cursor never nudges the words around as it moves */
-  .lead-caret { display: inline-block; position: relative; width: 0; height: 1em; animation: caret-blink 1.05s steps(1, end) infinite; }
-  .lead-caret::after { content: ""; position: absolute; left: 3px; top: -0.12em; width: 0.58em; height: 1.2em; background: #D9D9DF; }
+  .lead-caret { display: inline-block; position: relative; width: 0; height: 18px; animation: caret-blink 1.05s steps(1, end) infinite; }
+  .lead-caret::after { content: ""; position: absolute; left: 2px; top: -2px; width: 10px; height: 22px; background: #D9D9DF; }
   .lead.is-typing .lead-caret { animation: none; }
 }
 .hero-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-2); }
@@ -266,24 +266,7 @@ a.card:hover { transform: translateY(-2px); }
 .mini-shift span { font-size: var(--fs-xs); background: var(--surface-2); border-radius: 6px; padding: 4px var(--s-1); color: var(--text-muted); }
 .mini-shift span.m { color: var(--accent); }
 
-/* ---------- Chat ---------- */
-.chat-log { height: 320px; overflow-y: auto; padding: var(--s-2); display: flex; flex-direction: column; gap: var(--s-2); scroll-behavior: smooth; }
-.msg { max-width: 88%; padding: var(--s-1) var(--s-2); border-radius: var(--radius); font-size: var(--fs-sm); line-height: 1.5; animation: rise 320ms var(--ease) both; }
-.msg-user { align-self: flex-end; background: var(--accent-soft); border: 1px solid var(--accent-line); color: var(--text); }
-.msg-bot { align-self: flex-start; background: var(--surface-2); color: var(--text); }
-.msg-src { display: flex; align-items: center; gap: var(--s-1); margin-top: var(--s-1); font-size: var(--fs-xs); color: var(--text-faint); }
-.msg-src svg { width: 14px; height: 14px; flex: none; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.msg-src.is-handoff { color: var(--text); }
-.typing { display: inline-flex; gap: 4px; padding: 4px 0; }
-.typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: typing 1s ease-in-out infinite; }
-.typing i:nth-child(2) { animation-delay: 150ms; }
-.typing i:nth-child(3) { animation-delay: 300ms; }
-@keyframes typing { 0%, 60%, 100% { opacity: 0.25; transform: none; } 30% { opacity: 1; transform: translateY(-3px); } }
 @keyframes rise { from { opacity: 0; transform: translateY(4px); } }
-.chat-suggest { padding: var(--s-2); border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: var(--s-1); }
-.suggest { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); min-height: 40px; padding: var(--s-1) var(--s-2); font-size: var(--fs-xs); font-weight: 500; color: var(--text); cursor: pointer; text-align: left; transition: border-color var(--dur) var(--ease), opacity var(--dur) var(--ease); }
-.suggest:hover:not(:disabled) { border-color: var(--accent); }
-.suggest:disabled { opacity: 0.35; cursor: default; }
 
 /* ---------- Steps (compact) ---------- */
 .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-3); margin-top: var(--s-6); }
@@ -645,21 +628,8 @@ button.chip-open:hover { border-color: var(--accent); }
 .ms-img.a { background: linear-gradient(135deg, #E9C99A, #C98F52); }
 .ms-img.b { background: linear-gradient(135deg, #B8CDB8, #5F8A72); }
 .ms-img.c { background: linear-gradient(135deg, #A9C3D6, #557A99); }
-.ms-chat { position: absolute; right: 14px; bottom: 14px; display: flex; align-items: center; gap: 8px; max-width: 230px; background: #fff; border-radius: 14px; padding: 8px 10px; box-shadow: 0 8px 24px rgba(60, 40, 10, 0.18); font-size: 10.5px; color: #3D342A; }
-.ms-chat i { width: 26px; height: 26px; flex: none; border-radius: 50%; background: #2F5D50; display: grid; place-items: center; }
-.ms-chat svg { width: 14px; height: 14px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .devices .phone { position: absolute; right: 0; bottom: 0; width: 30%; max-width: 190px; border-radius: 26px; padding: 7px; background: #0E0E11; border: 1px solid #2E2E35; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6); }
 .devices .phone img { width: 100%; height: auto; border-radius: 20px; }
-
-/* Chat: two examples, with a proposed change card for the in-app helper */
-.chat .panel-bar .tabs { flex: none; }
-.proposal { margin-top: var(--s-1); border: 1px solid var(--accent-line); border-radius: var(--radius); background: var(--bg); overflow: hidden; }
-.proposal-row { display: flex; justify-content: space-between; gap: var(--s-2); padding: 6px 10px; font-size: var(--fs-xs); color: var(--text-muted); border-bottom: 1px solid var(--line); }
-.proposal-row b { color: var(--text); font-weight: 600; }
-.proposal-btns { display: flex; gap: 6px; padding: 8px 10px; }
-.proposal-btns span { font-size: var(--fs-xs); font-weight: 600; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--line); color: var(--text-muted); }
-.proposal-btns span.go { background: var(--btn); color: var(--on-btn); border-color: transparent; }
-.proposal-btns span.done { background: rgba(116, 207, 156, 0.14); color: var(--ok); border-color: transparent; }
 
 /* Applications */
 .apps { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); }
@@ -780,8 +750,7 @@ button.chip-open:hover { border-color: var(--accent); }
   .mini-site { min-height: 300px; padding: 12px 12px 18px; }
   .ms-nav span { display: none; }
   .ms-h { font-size: 20px; }
-  .ms-chat { display: none; }
-  .devices { padding-bottom: var(--s-6); }
+    .devices { padding-bottom: var(--s-6); }
   .browser { width: 88%; }
   .devices .phone { width: 34%; right: 0; border-radius: 20px; padding: 5px; }
   .devices .phone img { border-radius: 15px; }
