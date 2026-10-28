@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://outreachdev.dev/sitemap.xml
