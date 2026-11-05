@@ -1,0 +1,74 @@
+# Morning readme — what was built overnight and what to do next
+
+Built November 4–5, 2026. Nothing has been pushed. The old redirect homepage is gone from the working
+tree (a copy is in the archive notes if ever needed); the ten QR-code redirect stubs are untouched.
+
+## 1. Review the draft
+- The artifact link in the chat is the homepage plus every subpage, exactly as they will render.
+- Or run locally from the repo folder:
+
+```bash
+python -m http.server 8787
+```
+
+then open http://127.0.0.1:8787/ .
+
+Pages: `/`, `/services/`, `/industries/`, `/about/`, `/contact/`, `/faq/`, `/privacy-policy/`,
+`/terms-of-service/`, `404.html`.
+
+## 2. Things on the site that are placeholders or need your decision
+| Where | What | Action |
+| --- | --- | --- |
+| Footer, contact page, schema, privacy, terms | `hello@outreachdev.dev` | Create this mailbox in Google Workspace on outreachdev.dev tomorrow, or change the address in `src/layout.html`, `src/pages/contact.html`, `src/pages/privacy-policy.html`, `src/pages/terms-of-service.html`, `tools/build.mjs` (ORG.email) and `assets/js/site.js` (CONFIG.email), then rebuild. |
+| Contact form | Posts nowhere yet; falls back to opening the visitor's email app | Create a Formspree (or similar) form, paste the endpoint into `assets/js/site.js` → `CONFIG.formEndpoint`. |
+| Schema `sameAs` | Only ares-web.com | Add the Google Business Profile URL and social profile URLs in `tools/build.mjs` → ORG.sameAs, rebuild. |
+| Analytics | None installed | After creating GA4, add the gtag snippet to `src/layout.html` head, rebuild. |
+| Search Console / Bing | Not verified | Prefer DNS TXT verification (no file needed). If you use the HTML-file method, drop the file in the repo root. Replace the old IndexNow key file with a new key. |
+| Phone | 641-596-0111 everywhere | Change in `src/layout.html`, `src/pages/contact.html`, `src/pages/about.html`, `src/pages/index.html`, `tools/build.mjs`, legal pages if you get a business line. |
+| Address | 500 Bedford St., Clear Lake, IA 50428 in the footer, legal pages and schema | CAN-SPAM and schema want a postal address; a PO box or registered-agent address is fine if you'd rather not publish the street. |
+| Pricing | Described as flat monthly, in writing, no contract; no numbers | Decide numbers after reading `docs/research-lead-gen-agencies.md` §5. |
+| Hours | Contact page says weekdays 8 to 6 Central | Change if wrong. |
+| Service area | Iowa, Minnesota, Nebraska, Midwest, remote nationwide | Change in the footer, FAQ, schema if you want it tighter. |
+| Example leads | Hero and services show illustrative "tickets", labeled as examples | Fine as is; swap for real anonymized examples once you have them. |
+
+## 3. How to edit and rebuild
+- Page content lives in `src/pages/*.html` (one file per page, meta block at the top).
+- Shared header/footer/head in `src/layout.html`. Styles in `assets/css/site.css`. Behaviour in
+  `assets/js/site.js`.
+- After any edit:
+
+```bash
+node tools/build.mjs
+```
+
+This rewrites the HTML in the repo root and `sitemap.xml`. Commit the built files too; GitHub Pages
+serves them as-is with no build step.
+
+## 4. Push to make it live
+
+```bash
+git push origin main
+```
+
+GitHub Pages redeploys in about a minute. Then:
+1. https://outreachdev.dev/ should show the new homepage; `https://outreachdev.dev/work-orders/`
+   should still redirect to ares-web.com (QR codes).
+2. Search Console → Sitemaps → submit `https://outreachdev.dev/sitemap.xml`; URL Inspection →
+   Request indexing on `/`, `/services/`, `/industries/`, `/faq/`.
+3. Bing Webmaster Tools → import from Search Console → submit sitemap.
+4. Test share previews: paste the URL into a LinkedIn or Facebook post composer and confirm the
+   image and title appear.
+
+## 5. The research
+- `docs/research-lead-gen-agencies.md` — business models, pricing, marketing by stage, website
+  patterns, starting from scratch, recommended model.
+- `docs/keyword-research.md` — keyword clusters mapped to pages, 90-day content plan, AI
+  visibility and Google Business Profile setup specifics.
+- `docs/outreach-deliverability-plan.md` — the anti-spam operating plan for email, calls and
+  social, with the ordered setup checklist for tomorrow.
+- `docs/TONIGHT-PLAN.md` — the task queue that was followed.
+
+## 6. Local-only files
+- `.claude/launch.json` is a local preview helper and is ignored by git.
+- `assets/img/src/` holds the five original JPEGs (kept for re-rendering; ~2.4 MB). They are
+  committed so the renders are reproducible; remove them from the repo if you want it lighter.

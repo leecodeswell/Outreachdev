@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<meta name="description" content="{{description}}">
+<link rel="canonical" href="{{canonical}}">
+{{robots}}
+<meta name="theme-color" content="#F6F3EC">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Pari">
+<meta property="og:locale" content="en_US">
+<meta property="og:url" content="{{canonical}}">
+<meta property="og:title" content="{{ogTitle}}">
+<meta property="og:description" content="{{description}}">
+<meta property="og:image" content="https://outreachdev.dev/assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Exclusive leads for contractors who do the best work in their market.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ogTitle}}">
+<meta name="twitter:description" content="{{description}}">
+<meta name="twitter:image" content="https://outreachdev.dev/assets/og-image.jpg">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/assets/icons/icon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/icons/icon-180.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/css/site.css">
+{{preload}}
+<script type="application/ld+json">{{orgJsonLd}}</script>
+{{jsonld}}
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="bar glass">
+      <a class="brand" href="/" aria-label="Pari — home"><span class="mark" aria-hidden="true">P</span><span>Pari</span></a>
+      <nav class="nav" aria-label="Primary">
+        <a href="/services/"{{cur:services}}>Services</a>
+        <a href="/industries/"{{cur:industries}}>Who we serve</a>
+        <a href="/about/"{{cur:about}}>About</a>
+        <a href="/faq/"{{cur:faq}}>FAQ</a>
+        <a href="/contact/"{{cur:contact}}>Contact</a>
+      </nav>
+      <a class="btn btn-primary nav-cta" href="/contact/">Book a call <span class="arrow" aria-hidden="true">→</span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Menu"><span></span></button>
+    </div>
+    <div id="mobile-nav" class="mobile-nav glass" data-open="false">
+      <a href="/services/"{{cur:services}}>Services</a>
+      <a href="/industries/"{{cur:industries}}>Who we serve</a>
+      <a href="/about/"{{cur:about}}>About</a>
+      <a href="/faq/"{{cur:faq}}>FAQ</a>
+      <a href="/contact/"{{cur:contact}}>Contact</a>
+      <a class="btn btn-primary" href="/contact/">Book a call</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+{{body}}
+</main>
+
+<footer class="site-footer">
+  <div class="orb md" style="left:-40px;bottom:120px;opacity:.6" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="footer-grid matte">
+      <div>
+        <div class="footer-brand"><span class="mark" aria-hidden="true" style="width:26px;height:26px;border-radius:7px;background:linear-gradient(160deg,#4d6be0,#1E3FC9 55%,#102278);display:grid;place-items:center;color:#F6F3EC;font-size:.95rem;font-weight:700">P</span>Pari</div>
+        <p class="small muted" style="max-width:34ch">Lead generation, websites and local marketing for contractors who do high-end work. Built in Clear Lake, Iowa, by Lee Thompson.</p>
+        <address>
+          <a href="tel:+16415960111">641-596-0111</a><br>
+          <a href="mailto:hello@outreachdev.dev">hello@outreachdev.dev</a><br>
+          500 Bedford St., Clear Lake, IA 50428
+        </address>
+      </div>
+      <div>
+        <h4>Services</h4>
+        <ul>
+          <li><a href="/services/#lead-generation">Exclusive lead generation</a></li>
+          <li><a href="/services/#websites">Websites &amp; local SEO</a></li>
+          <li><a href="/services/#marketing">Marketing &amp; social</a></li>
+          <li><a href="/services/#partnership">Ongoing partnership</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Who we serve</h4>
+        <ul>
+          <li><a href="/industries/#builders">Custom home builders</a></li>
+          <li><a href="/industries/#remodelers">Remodelers</a></li>
+          <li><a href="/industries/#roofing">Roofing &amp; exteriors</a></li>
+          <li><a href="/industries/#hvac">HVAC, plumbing &amp; electrical</a></li>
+          <li><a href="/industries/#outdoor">Landscape, concrete &amp; outdoor</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <ul>
+          <li><a href="/about/">About Lee</a></li>
+          <li><a href="/faq/">FAQ</a></li>
+          <li><a href="/contact/">Contact</a></li>
+          <li><a href="https://ares-web.com/" rel="noopener">Ares Web Services</a></li>
+          <li><a href="/privacy-policy/">Privacy policy</a></li>
+          <li><a href="/terms-of-service/">Terms of service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2026</span> Lee Thompson · Pari. All rights reserved.</span>
+      <span>Serving Iowa, Minnesota, Nebraska and the Midwest. Remote-friendly nationwide.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/js/site.js" defer></script>
+</body>
+</html>
