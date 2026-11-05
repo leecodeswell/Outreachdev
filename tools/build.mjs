@@ -19,22 +19,20 @@ const ORG = {
       "@id": SITE + "/#org",
       "name": "Pari",
       "alternateName": ["Pari Lead Generation & Marketing", "Outreachdev"],
+      "slogan": "Verified leads and honest marketing for businesses ready to grow.",
       "url": SITE + "/",
       "logo": SITE + "/assets/icons/icon-512.png",
       "image": SITE + "/assets/og-image.jpg",
-      "description": "Exclusive lead generation, websites and local marketing for contractors and home-service businesses that do high-end work.",
+      "description": "Hand-researched, verified lead generation and marketing (social media, outreach, ads, sales support, websites and SEO) for growing businesses.",
       "founder": { "@type": "Person", "@id": SITE + "/about/#lee", "name": "Lee Thompson" },
       "telephone": "+1-641-596-0111",
       "email": "hello@outreachdev.dev",
       "address": { "@type": "PostalAddress", "streetAddress": "500 Bedford St.", "addressLocality": "Clear Lake", "addressRegion": "IA", "postalCode": "50428", "addressCountry": "US" },
-      "areaServed": [
-        { "@type": "State", "name": "Iowa" }, { "@type": "State", "name": "Minnesota" }, { "@type": "State", "name": "Nebraska" },
-        { "@type": "Country", "name": "United States" }
-      ],
+      "areaServed": { "@type": "Country", "name": "United States" },
       "priceRange": "$$",
-      "knowsAbout": ["lead generation for contractors", "local SEO", "Google Business Profile", "web design", "marketing for home builders", "roofing marketing", "HVAC marketing"],
+      "knowsAbout": ["lead generation", "B2B lead research", "lead verification", "social media marketing", "cold email deliverability", "Google Ads", "Meta ads", "sales follow-up", "web design", "search engine optimization", "AI search visibility"],
       // TODO morning: add Google Business Profile URL, LinkedIn, Facebook, Instagram, YouTube once created
-      "sameAs": ["https://ares-web.com/"]
+      "sameAs": []
     },
     {
       "@type": "WebSite",

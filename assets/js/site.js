@@ -50,14 +50,14 @@
       var data = new FormData(form);
       var name = (data.get("name") || "").toString().trim();
       var company = (data.get("company") || "").toString().trim();
-      var trade = (data.get("trade") || "").toString();
-      var area = (data.get("area") || "").toString().trim();
+      var need = (data.get("need") || "").toString();
+      var industry = (data.get("industry") || "").toString();
       var phone = (data.get("phone") || "").toString().trim();
       var email = (data.get("email") || "").toString().trim();
       var msg = (data.get("message") || "").toString().trim();
 
       if (!name || !email || !company) {
-        status.textContent = "Please add your name, company and email.";
+        status.textContent = "Please add your name, business name and email.";
         return;
       }
 
@@ -74,9 +74,9 @@
       }
 
       function mailtoFallback() {
-        var subject = "Lead gen inquiry from " + company;
+        var subject = "Call request from " + company;
         var body = [
-          "Name: " + name, "Company: " + company, "Trade: " + trade, "Service area: " + area,
+          "Name: " + name, "Business: " + company, "Interested in: " + need, "Industry: " + industry,
           "Phone: " + phone, "Email: " + email, "", msg
         ].join("\n");
         window.location.href = "mailto:" + CONFIG.email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);

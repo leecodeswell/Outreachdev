@@ -7,48 +7,43 @@ the Ads account) and watch Search Console for the queries that actually appear.
 
 ## 1. Who searches, and what they type
 
-Two very different searchers land on a contractor-marketing site:
+Revised November 5, 2026: the site now speaks to businesses in general, not contractors only, and is
+organized around two services, lead generation and marketing.
 
-1. **Contractors looking for help** (the buyer). Queries are "lead generation for contractors",
-   "roofing leads", "exclusive roofing leads", "marketing company for contractors", "how to get
-   more remodeling jobs", "best way to get construction leads", "Angi alternative for contractors".
-2. **Homeowners looking for a contractor** (the client's buyer). "roofing contractors Mason City",
-   "custom home builder near me", "kitchen remodel contractor Des Moines". These belong on the
-   *clients'* websites, not on outreachdev.dev, but they are the terms Pari sells visibility for, so
-   the site should speak about them fluently.
-
-The site targets group 1 and demonstrates competence on group 2.
+1. **Owners and sales leads who need more customers** (the buyer). Queries are "lead generation
+   company", "verified B2B leads", "buy verified leads", "lead research service", "appointment
+   setting service", "outsourced prospecting", "how to find new clients for my business".
+2. **Owners who need marketing help.** "social media management for small business", "cold email
+   agency", "cold email deliverability", "Google Ads management small business", "small business
+   website design", "local SEO services", "how to show up in ChatGPT answers".
 
 ## 2. Keyword clusters mapped to pages
 
 | Cluster (buyer intent) | Example queries | Page | Status |
 | --- | --- | --- | --- |
-| Core service | lead generation for contractors; contractor lead generation company; exclusive contractor leads | `/` and `/services/#lead-generation` | built |
-| Marketplace alternatives | Angi alternative; HomeAdvisor alternative for contractors; are Thumbtack leads worth it; shared leads vs exclusive leads | `/` comparison block, `/faq/` | built; a dedicated article later |
-| Trade + leads | roofing leads; exclusive roofing leads; HVAC leads; remodeling leads; custom home builder leads; landscaping leads; concrete leads | `/industries/#roofing` etc. | built as anchors; promote to standalone pages when there is a case study each |
-| Trade + marketing | roofing marketing agency; HVAC marketing company; remodeler marketing; marketing for home builders; contractor SEO | `/services/#websites`, `/industries/` | built |
-| Websites | contractor website design; website for roofing company; home builder website design | `/services/#websites` | built |
-| Local SEO / GBP | Google Business Profile for contractors; local SEO for contractors; how to rank in Google Maps contractor | `/services/#websites`, future article | partial |
-| Geography | lead generation Iowa; marketing agency Clear Lake Iowa; Mason City marketing; Des Moines contractor marketing; Minneapolis contractor leads; Omaha roofing leads | footer, schema `areaServed`, future city pages | partial |
-| How-to (informational) | how to get more roofing jobs; how to get construction leads; how to get remodeling clients; cost per lead roofing | future `/guides/` articles | not yet |
-| Pricing | how much does contractor lead generation cost; lead generation pricing for contractors | `/services/#pricing`, `/faq/` | built without numbers |
-
-Titles and descriptions on every page already carry the core cluster. Each H1 is a benefit statement
-with the trade words in the H2s and body, which matches how the competitors that rank are written.
+| Core lead gen | lead generation company; verified leads; B2B lead generation; lead research service | `/`, `/lead-generation/` | built |
+| Lead quality | verified email leads; how to verify B2B leads; contact data decay; bad lead lists | `/lead-generation/#what-you-get`, `/faq/` | built |
+| Social media | social media management for small business; social media manager for local business | `/marketing/#social-media` | built |
+| Outreach | cold email agency; cold email without spam; email deliverability service; cold calling service | `/marketing/#outreach`, `/faq/` | built |
+| Ads | Google Ads management small business; Facebook ads agency small business | `/marketing/#ads` | built |
+| Sales | speed to lead; sales follow-up system; appointment setting | `/marketing/#sales` | built |
+| Websites & SEO | small business website design; local SEO services; AI search visibility; GEO | `/marketing/#websites-seo` | built |
+| Pricing | lead generation pricing; how much does lead generation cost | `/lead-generation/#pricing`, `/faq/` | built without numbers |
+| Geography | marketing agency Clear Lake Iowa; lead generation Iowa; Mason City marketing | footer, schema address | partial |
+| Industry + leads | dental practice leads; HVAC leads; law firm marketing; manufacturing leads | future pages | not yet; build once there is a real example per industry |
 
 ## 3. Content to add over the first 90 days (in order)
 
-1. **Guide: "Exclusive leads vs shared leads: what contractors need to know"** (targets the
-   marketplace-alternative cluster; links to `/services/`). 1,200 words, answer-first opening.
-2. **Guide: "How to get more roofing jobs without buying marketplace leads"**, then the same shape
-   for remodeling and custom homes. These are the highest-intent informational queries.
-3. **Trade pages** promoted from anchors to their own URLs (`/roofing-leads/`,
-   `/remodeling-leads/`, `/home-builder-leads/`) once there is one real example per trade.
-4. **City pages** for the markets Lee is actually selling into (Mason City, Des Moines, Cedar
-   Rapids, Rochester MN, Minneapolis, Omaha), each with local specifics, not boilerplate. Only build
-   these for markets with real activity; thin city pages are a known way to get ignored.
-5. **Case studies** at day 30 and day 90 with a client, with a number.
-6. **"Cost of contractor lead generation in 2026"** once pricing is set.
+1. **Guide: "What makes a lead verified (and why most lead lists fail)"**, linking to
+   `/lead-generation/`. Answer-first, cite the data-decay research.
+2. **Guide: "Cold email in 2026 without landing in spam"**, built from
+   `docs/outreach-deliverability-plan.md`. High-intent and shows real expertise.
+3. **Guide: "Speed to lead: why the first hour decides the sale"**, citing the HBR study.
+4. **Industry pages** for the first two industries where Lee lands a client, each with a real,
+   anonymized example.
+5. **Case studies** at day 30 and day 90 with a client, with a number. These replace the
+   third-party stats as the strongest proof on the site.
+6. **"How much does lead generation cost in 2026"** once pricing is set.
 
 ## 4. AI visibility (AI Overviews, AI Mode, ChatGPT, Perplexity)
 

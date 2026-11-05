@@ -1,16 +1,23 @@
 # Pari (outreachdev.dev)
 
-> Exclusive lead generation, websites and local marketing for contractors and home-service businesses that do high-end work. Run by Lee Thompson from Clear Lake, Iowa. Serves Iowa, Minnesota, Nebraska and the Midwest; remote-friendly nationwide.
+> Verified lead generation and marketing for growing businesses. Pari researches leads by hand, verifies the decision maker, email and phone before delivery, and runs marketing in five areas: social media, outreach, ads, sales support, and websites with SEO. Run by Lee Thompson from Clear Lake, Iowa, working with businesses across the United States.
 
-Pari works with one contractor per trade, per market. Leads are never shared or resold. Clients own their website, domain, Google Business Profile and data. No long-term contracts.
+Leads researched for a client go to that client only and are never resold. Pricing is a flat monthly fee agreed in writing, month to month, with no setup fee. Clients own their website, accounts, content and data. Pari does not use bought lists, bulk spam, robocalls or fake reviews.
 
 ## Pages
-- [Home](https://outreachdev.dev/): what Pari does and how it is different from lead marketplaces
-- [Services](https://outreachdev.dev/services/): exclusive lead generation, websites and local SEO, marketing and social, ongoing partnership
-- [Who we serve](https://outreachdev.dev/industries/): custom home builders, remodelers, roofing and exteriors, HVAC/plumbing/electrical, landscape/concrete/outdoor
-- [About](https://outreachdev.dev/about/): Lee Thompson, background, how the work is done
-- [FAQ](https://outreachdev.dev/faq/): pricing approach, exclusivity, contracts, how leads are delivered
+- [Home](https://outreachdev.dev/): overview, the research behind the approach, how it works
+- [Lead generation](https://outreachdev.dev/lead-generation/): what a verified lead includes, the four-step research process, pricing approach
+- [Marketing](https://outreachdev.dev/marketing/): social media, outreach, ads, sales, websites and SEO, each with a cited statistic
+- [About](https://outreachdev.dev/about/): Lee Thompson, background and commitments
+- [FAQ](https://outreachdev.dev/faq/): verification, lead sources, pricing, contracts, spam and calling rules, timelines
 - [Contact](https://outreachdev.dev/contact/): book a call, phone 641-596-0111, hello@outreachdev.dev
 
-## Related
-- [Ares Web Services](https://ares-web.com/): Lee Thompson's web design studio and software products
+## Research cited on the site
+- Harvard Business Review, "The Short Life of Online Sales Leads" (2011): https://hbr.org/2011/03/the-short-life-of-online-sales-leads
+- Salesforce, State of Sales: https://www.salesforce.com/resources/research-reports/state-of-sales/
+- Sprout Social Index 2025: https://sproutsocial.com/insights/press/the-days-of-trend-chasing-are-over-new-research-from-sprout-social-reveals-a-third-of-consumers-think-jumping-on-viral-trends-is-embarrassing-for-brands/
+- BrightEdge, organic share of traffic (2019): https://www.brightedge.com/blog/organic-share-of-traffic-increases-to-53
+- HubSpot, Database Decay Simulation: https://www.hubspot.com/database-decay
+- RAIN Group, Top Performance in Sales Prospecting: https://www.rainsalestraining.com/sales-research/sales-prospecting-research
+- Google Economic Impact methodology: https://economicimpact.google/methodology/
+- Google mobile speed study (2016): https://blog.amp.dev/2016/09/08/new-study-speedmatters-for-mobile-user-engagement-and-revenue/

@@ -1,6 +1,6 @@
 # outreachdev.dev — Pari
 
-Lead-generation and marketing site for contractors, run by Lee Thompson. Static HTML on GitHub
+Verified lead generation and marketing site for growing businesses, run by Lee Thompson. Static HTML on GitHub
 Pages (custom domain in `CNAME`).
 
 ## Editing
@@ -8,7 +8,8 @@ Pages (custom domain in `CNAME`).
 - Page content: `src/pages/*.html` (JSON meta block at the top of each file).
 - Shared head, nav and footer: `src/layout.html`. Organization schema: `tools/build.mjs`.
 - Styles: `assets/css/site.css`. Behaviour (menu, form, reveal): `assets/js/site.js`.
-- Images: `assets/img/` (WebP renders), originals in `assets/img/src/`.
+- Images: `assets/img/` (orange concept-sketch WebP renders from `tools/sketch.py`), originals in `assets/img/src/`.
+- Favicons and share image: `python tools/brand-assets.py`.
 
 Rebuild after any change, then commit the generated files:
 
