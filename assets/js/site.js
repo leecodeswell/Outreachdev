@@ -5,7 +5,7 @@
   // ---- Config: fill these in once the accounts exist (see docs/MORNING-README.md)
   var CONFIG = {
     formEndpoint: "",                 // e.g. "https://formspree.io/f/xxxxxxx". Empty = mailto fallback.
-    email: "hello@outreachdev.dev",   // must match the address in the HTML
+    email: "hello@parileads.com",   // must match the address in the HTML
     phone: "+16415960111"
   };
 

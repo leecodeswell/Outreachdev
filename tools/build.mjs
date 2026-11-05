@@ -26,7 +26,7 @@ const ORG = {
       "description": "Hand-researched, verified lead generation and marketing (social media, outreach, ads, sales support, websites and SEO) for growing businesses.",
       "founder": { "@type": "Person", "@id": SITE + "/about/#lee", "name": "Lee Thompson" },
       "telephone": "+1-641-596-0111",
-      "email": "hello@outreachdev.dev",
+      "email": "hello@parileads.com",
       "address": { "@type": "PostalAddress", "streetAddress": "500 Bedford St.", "addressLocality": "Clear Lake", "addressRegion": "IA", "postalCode": "50428", "addressCountry": "US" },
       "areaServed": { "@type": "Country", "name": "United States" },
       "priceRange": "$$",
