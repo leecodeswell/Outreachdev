@@ -1,0 +1,26 @@
+Redirect pages for the old Outreachdev app addresses
+=====================================================
+
+When the new Outreachdev (lead-gen) site goes live, copy everything in this folder into the
+ROOT of that site's repo, keeping the folders. Then these old addresses forward to their new
+home at ares-web.com/services:
+
+  outreachdev.dev/scheduling-agent/            -> https://ares-web.com/services/scheduling-agent/
+  outreachdev.dev/work-orders/                 -> https://ares-web.com/services/work-orders/
+  outreachdev.dev/scheduling-agent.html        -> https://ares-web.com/services/scheduling-agent.html
+  outreachdev.dev/work-order-manager.html      -> https://ares-web.com/services/work-order-manager.html
+  outreachdev.dev/spreadsheet-to-app.html      -> https://ares-web.com/services/spreadsheet-to-app.html
+  outreachdev.dev/work-instructions.html       -> https://ares-web.com/services/work-instructions.html
+  outreachdev.dev/quote-builder.html           -> https://ares-web.com/services/quote-builder.html
+  outreachdev.dev/privacy.html                 -> https://ares-web.com/services/privacy.html
+  outreachdev.dev/terms.html                   -> https://ares-web.com/services/terms.html
+  outreachdev.dev/accessibility.html           -> https://ares-web.com/services/accessibility.html
+
+Why it matters: Work Order Manager prints QR codes that point at
+outreachdev.dev/work-orders/#wo/<number>. Those codes are on paper in customers' shops. These
+pages keep the #wo/... part, so the codes keep opening the right work order.
+
+Don't let the new site use any of these paths for something else, and keep them for good.
+Once they're live, you can remove outreachdev.dev from the Google API key's website list
+(Google Cloud Console > APIs & Services > Credentials > Browser key), since these pages never
+sign anyone in.
