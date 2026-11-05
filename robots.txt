@@ -4,4 +4,4 @@ Disallow: /src/
 Disallow: /tools/
 Disallow: /docs/
 
-Sitemap: https://outreachdev.dev/sitemap.xml
+Sitemap: https://parileads.com/sitemap.xml

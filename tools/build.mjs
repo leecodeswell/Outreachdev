@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
-const SITE = "https://outreachdev.dev";
+const SITE = "https://parileads.com";
 const layout = readFileSync(join(ROOT, "src/layout.html"), "utf8");
 
 const artIdx = process.argv.indexOf("--artifact");
