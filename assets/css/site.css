@@ -51,53 +51,27 @@ p{margin:0 0 1em}
 .sketch.bottom img{object-position:center 80%}
 .sketch.faint img{opacity:.6}
 
-/* ---------- Glass spheres behind the panes ----------
-   Glossy orange orbs that straddle each pane's edge: crisp outside the glass,
-   frosted inside it. That contrast is what makes the glass read as glass. */
-.section::before,.section::after{content:"";position:absolute;z-index:-1;pointer-events:none;border-radius:50%;aspect-ratio:1;
-  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.95) 0 4%,#FFD7B8 11%,#F5A060 30%,#E4691E 52%,#B83E0A 76%,#7A2A05 100%);
-  box-shadow:inset -14px -22px 40px rgba(80,25,2,.35),inset 8px 10px 24px rgba(255,255,255,.35),0 30px 60px -22px rgba(120,45,8,.5);
-  animation:drift 16s var(--ease) infinite alternate}
-.section::before{width:clamp(130px,17vw,260px);left:max(-50px,calc(50% - 700px));top:9%}
-.section::after{width:clamp(90px,11vw,170px);right:max(-30px,calc(50% - 690px));bottom:9%;animation-delay:-8s;
-  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.95) 0 5%,#FFE2C4 13%,#F8B577 34%,#EE8A3A 58%,#C85212 82%,#8E3407 100%)}
-.section:nth-of-type(even)::before{left:auto;right:max(-50px,calc(50% - 700px));top:auto;bottom:10%}
-.section:nth-of-type(even)::after{right:auto;left:max(-30px,calc(50% - 690px));bottom:auto;top:10%}
-.section.no-orbs::before,.section.no-orbs::after{display:none}
-@keyframes drift{from{transform:translate(0,0)}to{transform:translate(14px,-24px)}}
-@media (prefers-reduced-motion:reduce){.section::before,.section::after{animation:none}}
-
-/* ---------- The glass pane ---------- */
+/* ---------- The glass pane ----------
+   Clear frosted glass: almost no fill, heavy blur, a fine frosted grain and a thin
+   light edge. Whatever sits behind (the sketches) shows through as soft shapes. */
 .pane{position:relative;border-radius:var(--radius);padding:clamp(24px,5vw,68px);
-  background:linear-gradient(135deg,rgba(255,255,255,.62) 0%,rgba(255,255,255,.30) 38%,rgba(255,250,244,.22) 62%,rgba(255,255,255,.42) 100%);
-  border:1px solid rgba(255,255,255,.35);
-  box-shadow:
-    inset 0 1px 1px rgba(255,255,255,.95),
-    inset 0 0 0 1px rgba(255,255,255,.18),
-    inset 0 0 50px rgba(255,255,255,.35),
-    inset 0 -30px 60px -30px rgba(234,106,31,.16),
-    0 40px 90px -28px rgba(110,45,8,.38),
-    0 4px 12px rgba(110,45,8,.08)}
+  background:linear-gradient(160deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,.08) 55%,rgba(255,255,255,.14) 100%);
+  border:1px solid rgba(255,255,255,.5);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75),inset 0 0 0 1px rgba(255,255,255,.06),
+    0 1px 2px rgba(80,35,8,.06),0 30px 70px -30px rgba(80,35,8,.30)}
 @supports (backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px)){
-  .pane{-webkit-backdrop-filter:blur(22px) saturate(1.7) brightness(1.06);backdrop-filter:blur(22px) saturate(1.7) brightness(1.06)}
+  .pane{-webkit-backdrop-filter:blur(18px) saturate(1.35);backdrop-filter:blur(18px) saturate(1.35)}
 }
-/* reflections: a broad diagonal sheet of light and a bright top edge */
-.pane::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
-  background:
-    linear-gradient(122deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,.16) 24%,rgba(255,255,255,0) 36%),
-    linear-gradient(122deg,rgba(255,255,255,0) 58%,rgba(255,255,255,.22) 63%,rgba(255,255,255,0) 70%),
-    radial-gradient(90% 30% at 50% 0%,rgba(255,255,255,.55),rgba(255,255,255,0) 70%)}
-/* polished rim: a gradient border that catches light top-left and bottom-right */
-.pane::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.6px;pointer-events:none;z-index:2;
-  background:linear-gradient(140deg,#fff 0%,rgba(255,255,255,.45) 20%,rgba(255,255,255,.04) 46%,rgba(255,196,150,.6) 80%,#fff 100%);
-  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
-          mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+/* frosted grain */
+.pane::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;opacity:.32;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+/* thin light catching the top edge */
+.pane::after{content:"";position:absolute;top:0;left:6%;right:6%;height:1px;pointer-events:none;z-index:2;
+  background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.95) 50%,rgba(255,255,255,0))}
 .pane>*{position:relative;z-index:1}
-.pane.tint{color:#fff;border-color:rgba(255,210,170,.5);
-  background:linear-gradient(135deg,rgba(240,120,50,.86) 0%,rgba(194,65,12,.80) 50%,rgba(150,52,9,.88) 100%);
-  box-shadow:inset 0 1px 1px rgba(255,225,200,.95),inset 0 0 50px rgba(255,190,140,.25),0 40px 90px -28px rgba(110,45,8,.5)}
-.pane.tint::before{background:linear-gradient(122deg,rgba(255,255,255,.35) 0%,rgba(255,255,255,.08) 26%,rgba(255,255,255,0) 38%),
-  linear-gradient(122deg,rgba(255,255,255,0) 58%,rgba(255,255,255,.14) 63%,rgba(255,255,255,0) 70%)}
+.pane.tint{color:#fff;border-color:rgba(255,200,160,.45);
+  background:linear-gradient(160deg,rgba(214,86,20,.78) 0%,rgba(178,58,10,.72) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,220,190,.6),0 30px 70px -30px rgba(80,35,8,.45)}
 .pane.tint h2,.pane.tint h3,.pane.tint p{color:#fff}
 .pane.tint .eyebrow{color:#FFE2CB}
 @media (prefers-reduced-transparency:reduce){
@@ -145,10 +119,10 @@ p{margin:0 0 1em}
 .site-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;padding:10px 0}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--paper)}
 .site-header .bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:8px 10px 8px 14px;border-radius:999px;position:relative;
-  background:linear-gradient(180deg,rgba(255,255,255,.84),rgba(255,255,255,.58));border:1px solid rgba(255,255,255,.95);
-  box-shadow:inset 0 1px 0 #fff,0 14px 40px -18px rgba(110,45,8,.35)}
+  background:rgba(255,255,255,.30);border:1px solid rgba(255,255,255,.55);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 14px 40px -20px rgba(80,35,8,.3)}
 @supports (backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px)){
-  .site-header .bar,.mobile-nav{-webkit-backdrop-filter:blur(16px) saturate(1.6);backdrop-filter:blur(16px) saturate(1.6)}
+  .site-header .bar,.mobile-nav{-webkit-backdrop-filter:blur(20px) saturate(1.35);backdrop-filter:blur(20px) saturate(1.35)}
 }
 .brand{display:inline-flex;align-items:center;gap:.55rem;text-decoration:none;color:var(--ink);font-family:var(--font-display);font-weight:600;font-size:1.06rem;letter-spacing:.02em}
 .mark{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:#FFF7EE;font-family:var(--font-display);font-weight:700;font-size:1.02rem;flex:none;
@@ -165,7 +139,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .nav-toggle[aria-expanded="true"] span{background:transparent}
 .nav-toggle[aria-expanded="true"] span::before{top:0;transform:rotate(45deg)}
 .nav-toggle[aria-expanded="true"] span::after{top:0;transform:rotate(-45deg)}
-.mobile-nav{display:none;margin-top:8px;padding:10px;border-radius:22px;background:rgba(255,255,255,.88);border:1px solid #fff;box-shadow:0 20px 50px -20px rgba(110,45,8,.35)}
+.mobile-nav{display:none;margin-top:8px;padding:10px;border-radius:22px;background:rgba(255,252,247,.82);border:1px solid rgba(255,255,255,.6);box-shadow:0 20px 50px -20px rgba(80,35,8,.35)}
 .mobile-nav[data-open="true"]{display:block}
 .mobile-nav a{display:block;padding:.8rem 1rem;border-radius:var(--radius-xs);text-decoration:none;color:var(--ink);font-weight:500}
 .mobile-nav a:hover,.mobile-nav a[aria-current="page"]{background:rgba(194,65,12,.09);color:var(--orange-lo)}
