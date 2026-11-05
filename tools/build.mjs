@@ -32,7 +32,7 @@ const ORG = {
       "priceRange": "$$",
       "knowsAbout": ["lead generation", "B2B lead research", "lead verification", "social media marketing", "cold email deliverability", "Google Ads", "Meta ads", "sales follow-up", "web design", "search engine optimization", "AI search visibility"],
       // TODO morning: add Google Business Profile URL, LinkedIn, Facebook, Instagram, YouTube once created
-      "sameAs": []
+      "sameAs": ["https://www.facebook.com/profile.php?id=61595957084757", "https://www.instagram.com/parileads/"]
     },
     {
       "@type": "WebSite",
