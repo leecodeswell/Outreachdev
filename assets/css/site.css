@@ -41,7 +41,7 @@ p{margin:0 0 1em}
 :focus-visible{outline:3px solid var(--orange);outline-offset:3px;border-radius:6px}
 
 /* ---------- Sections over sketches ---------- */
-.section{position:relative;isolation:isolate;padding-block:clamp(44px,7vw,100px)}
+.section{position:relative;isolation:isolate;padding-block:clamp(44px,7vw,100px);overflow-x:clip}
 .section.first{padding-top:clamp(20px,4vw,48px)}
 .sketch{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none;
   -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 14%,#000 86%,transparent 100%);
@@ -51,36 +51,71 @@ p{margin:0 0 1em}
 .sketch.bottom img{object-position:center 80%}
 .sketch.faint img{opacity:.6}
 
-/* ---------- The glossy glass pane ---------- */
+/* ---------- Glass spheres behind the panes ----------
+   Glossy orange orbs that straddle each pane's edge: crisp outside the glass,
+   frosted inside it. That contrast is what makes the glass read as glass. */
+.section::before,.section::after{content:"";position:absolute;z-index:-1;pointer-events:none;border-radius:50%;aspect-ratio:1;
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.95) 0 4%,#FFD7B8 11%,#F5A060 30%,#E4691E 52%,#B83E0A 76%,#7A2A05 100%);
+  box-shadow:inset -14px -22px 40px rgba(80,25,2,.35),inset 8px 10px 24px rgba(255,255,255,.35),0 30px 60px -22px rgba(120,45,8,.5);
+  animation:drift 16s var(--ease) infinite alternate}
+.section::before{width:clamp(130px,17vw,260px);left:max(-50px,calc(50% - 700px));top:9%}
+.section::after{width:clamp(90px,11vw,170px);right:max(-30px,calc(50% - 690px));bottom:9%;animation-delay:-8s;
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.95) 0 5%,#FFE2C4 13%,#F8B577 34%,#EE8A3A 58%,#C85212 82%,#8E3407 100%)}
+.section:nth-of-type(even)::before{left:auto;right:max(-50px,calc(50% - 700px));top:auto;bottom:10%}
+.section:nth-of-type(even)::after{right:auto;left:max(-30px,calc(50% - 690px));bottom:auto;top:10%}
+.section.no-orbs::before,.section.no-orbs::after{display:none}
+@keyframes drift{from{transform:translate(0,0)}to{transform:translate(14px,-24px)}}
+@media (prefers-reduced-motion:reduce){.section::before,.section::after{animation:none}}
+
+/* ---------- The glass pane ---------- */
 .pane{position:relative;border-radius:var(--radius);padding:clamp(24px,5vw,68px);
-  background:linear-gradient(165deg,rgba(255,255,255,.68) 0%,rgba(255,255,255,.40) 46%,rgba(255,248,240,.54) 100%);
-  border:1px solid rgba(255,255,255,.9);
+  background:linear-gradient(135deg,rgba(255,255,255,.62) 0%,rgba(255,255,255,.30) 38%,rgba(255,250,244,.22) 62%,rgba(255,255,255,.42) 100%);
+  border:1px solid rgba(255,255,255,.35);
   box-shadow:
-    inset 0 1.5px 0 rgba(255,255,255,1),
-    inset 0 -1px 0 rgba(255,255,255,.5),
-    inset 0 0 0 1px rgba(255,255,255,.28),
-    inset 0 -40px 60px -40px rgba(234,106,31,.10),
-    0 40px 90px -30px rgba(110,45,8,.32),
-    0 10px 28px -12px rgba(110,45,8,.16)}
+    inset 0 1px 1px rgba(255,255,255,.95),
+    inset 0 0 0 1px rgba(255,255,255,.18),
+    inset 0 0 50px rgba(255,255,255,.35),
+    inset 0 -30px 60px -30px rgba(234,106,31,.16),
+    0 40px 90px -28px rgba(110,45,8,.38),
+    0 4px 12px rgba(110,45,8,.08)}
 @supports (backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px)){
-  .pane{-webkit-backdrop-filter:blur(5px) saturate(1.5) brightness(1.05);backdrop-filter:blur(5px) saturate(1.5) brightness(1.05)}
+  .pane{-webkit-backdrop-filter:blur(22px) saturate(1.7) brightness(1.06);backdrop-filter:blur(22px) saturate(1.7) brightness(1.06)}
 }
-/* specular sheen: a curved top highlight plus one diagonal glint */
+/* reflections: a broad diagonal sheet of light and a bright top edge */
 .pane::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
   background:
-    radial-gradient(120% 45% at 30% -10%,rgba(255,255,255,.75),rgba(255,255,255,0) 55%),
-    linear-gradient(112deg,rgba(255,255,255,0) 54%,rgba(255,255,255,.30) 59%,rgba(255,255,255,0) 64%)}
+    linear-gradient(122deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,.16) 24%,rgba(255,255,255,0) 36%),
+    linear-gradient(122deg,rgba(255,255,255,0) 58%,rgba(255,255,255,.22) 63%,rgba(255,255,255,0) 70%),
+    radial-gradient(90% 30% at 50% 0%,rgba(255,255,255,.55),rgba(255,255,255,0) 70%)}
+/* polished rim: a gradient border that catches light top-left and bottom-right */
+.pane::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.6px;pointer-events:none;z-index:2;
+  background:linear-gradient(140deg,#fff 0%,rgba(255,255,255,.45) 20%,rgba(255,255,255,.04) 46%,rgba(255,196,150,.6) 80%,#fff 100%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+          mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
 .pane>*{position:relative;z-index:1}
-.pane.tint{color:#fff;border-color:rgba(255,210,170,.7);
-  background:linear-gradient(160deg,rgba(234,106,31,.90) 0%,rgba(194,65,12,.92) 55%,rgba(150,52,9,.94) 100%);
-  box-shadow:inset 0 1.5px 0 rgba(255,220,190,.9),inset 0 -1px 0 rgba(255,255,255,.2),0 40px 90px -30px rgba(110,45,8,.45)}
-.pane.tint::before{background:radial-gradient(130% 60% at 25% -15%,rgba(255,255,255,.45),rgba(255,255,255,0) 55%),
-  linear-gradient(112deg,rgba(255,255,255,0) 52%,rgba(255,255,255,.18) 58%,rgba(255,255,255,0) 66%)}
+.pane.tint{color:#fff;border-color:rgba(255,210,170,.5);
+  background:linear-gradient(135deg,rgba(240,120,50,.86) 0%,rgba(194,65,12,.80) 50%,rgba(150,52,9,.88) 100%);
+  box-shadow:inset 0 1px 1px rgba(255,225,200,.95),inset 0 0 50px rgba(255,190,140,.25),0 40px 90px -28px rgba(110,45,8,.5)}
+.pane.tint::before{background:linear-gradient(122deg,rgba(255,255,255,.35) 0%,rgba(255,255,255,.08) 26%,rgba(255,255,255,0) 38%),
+  linear-gradient(122deg,rgba(255,255,255,0) 58%,rgba(255,255,255,.14) 63%,rgba(255,255,255,0) 70%)}
 .pane.tint h2,.pane.tint h3,.pane.tint p{color:#fff}
 .pane.tint .eyebrow{color:#FFE2CB}
 @media (prefers-reduced-transparency:reduce){
   .pane{background:rgba(255,253,249,.96);-webkit-backdrop-filter:none;backdrop-filter:none}
 }
+
+/* a smaller glass panel inside a pane (pay-per-client promise) */
+.inset{position:relative;border-radius:22px;padding:clamp(20px,2.6vw,30px);
+  background:linear-gradient(140deg,rgba(255,255,255,.75),rgba(255,247,238,.45));
+  border:1px solid rgba(255,255,255,.9);
+  box-shadow:inset 0 1px 1px #fff,inset 0 -20px 40px -24px rgba(234,106,31,.25),0 20px 40px -22px rgba(110,45,8,.35)}
+.promise .big{font-family:var(--font-display);font-size:clamp(1.7rem,3vw,2.3rem);line-height:1.08;letter-spacing:-.02em;margin:0 0 .6rem;color:var(--ink)}
+.promise .big em{font-style:normal;color:var(--orange)}
+.promise ol{list-style:none;margin:1.1rem 0 0;padding:0;display:grid;gap:.7rem;counter-reset:p}
+.promise li{counter-increment:p;display:grid;grid-template-columns:28px minmax(0,1fr);gap:.7rem;align-items:start;color:var(--ink-2);font-size:.95rem}
+.promise li::before{content:counter(p);display:grid;place-items:center;width:28px;height:28px;border-radius:50%;color:#fff;font-weight:650;font-size:.82rem;
+  background:linear-gradient(180deg,var(--orange-hi),var(--orange-lo));box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+.promise .fine{font-size:.82rem;color:var(--muted);margin:1rem 0 0}
 
 /* rows and dividers inside a pane (no nested cards) */
 .divide{border:0;border-top:1px solid var(--line);margin-block:clamp(28px,4vw,48px)}

@@ -4,11 +4,11 @@
   "priority": "0.9",
   "title": "Verified B2B & Local Lead Generation | Hand-Researched Leads | Pari",
   "ogTitle": "Verified lead generation, researched by hand",
-  "description": "Hand-researched leads matched to your ideal customer. Decision maker named, email verified, phone checked and a reason to call, delivered weekly. Never resold. Flat monthly price.",
+  "description": "Hand-researched leads matched to your ideal customer. Decision maker named, email verified, phone checked and a reason to call, delivered weekly. Never resold. Pay only for verified clients you win.",
   "preload": "/assets/img/wall-sketch-1600.webp",
   "jsonld": [
     {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://outreachdev.dev/"},{"@type":"ListItem","position":2,"name":"Lead generation","item":"https://outreachdev.dev/lead-generation/"}]},
-    {"@context":"https://schema.org","@type":"Service","@id":"https://outreachdev.dev/lead-generation/#service","name":"Verified lead generation","serviceType":"Lead generation","provider":{"@id":"https://outreachdev.dev/#org"},"areaServed":{"@type":"Country","name":"United States"},"description":"Hand-researched leads matched to a business's ideal customer profile. Each lead includes a named decision maker, a verified email address, a checked phone number, fit notes and the sources used, and is delivered weekly. Leads are never resold.","offers":{"@type":"Offer","priceSpecification":{"@type":"UnitPriceSpecification","priceCurrency":"USD","unitText":"MONTH","description":"Flat monthly fee agreed in writing"}}}
+    {"@context":"https://schema.org","@type":"Service","@id":"https://outreachdev.dev/lead-generation/#service","name":"Verified lead generation","serviceType":"Lead generation","provider":{"@id":"https://outreachdev.dev/#org"},"areaServed":{"@type":"Country","name":"United States"},"description":"Hand-researched leads matched to a business's ideal customer profile. Each lead includes a named decision maker, a verified email address, a checked phone number, fit notes and the sources used, and is delivered weekly. Leads are never resold.","offers":{"@type":"Offer","priceSpecification":{"@type":"PriceSpecification","priceCurrency":"USD","description":"Pay per verified client: a fee is due only when a delivered lead becomes the client's paying customer. Other payment plans available."}}}
   ]
 } -->
 
@@ -29,18 +29,15 @@
             <a class="btn btn-ghost" href="#process">How the research works</a>
           </div>
         </div>
-        <div class="record" role="group" aria-label="Example of a verified lead record">
-          <div class="rt"><span>Verified lead</span><span>Example</span></div>
-          <dl>
-            <dt>Company</dt><dd>Commercial HVAC contractor, 25 staff</dd>
-            <dt>Decision maker</dt><dd>Operations manager, named</dd>
-            <dt>Email</dt><dd><span class="ok">Verified, direct</span></dd>
-            <dt>Phone</dt><dd><span class="ok">Checked, direct line</span></dd>
-            <dt>Fit</dt><dd>Service area overlaps yours, fleet of 12 vans</dd>
-            <dt>Why now</dt><dd>Posted three technician openings this month</dd>
-            <dt>Sources</dt><dd>Company site, job board, state registry</dd>
-          </dl>
-          <p class="cap">Illustrative example. Real records carry full names and direct contact details.</p>
+        <div class="inset promise">
+          <p class="eyebrow">How you pay</p>
+          <p class="big">Pay only for <em>verified clients</em> you win from our leads.</p>
+          <ol>
+            <li><span>We deliver verified leads every week.</span></li>
+            <li><span>You reach out and close the ones that fit.</span></li>
+            <li><span>You pay only when one becomes your paying client.</span></li>
+          </ol>
+          <p class="fine">Other payment plans are available if you'd prefer.</p>
         </div>
       </div>
     </div>
@@ -58,13 +55,32 @@
         <h2>Six things every lead has before it reaches you.</h2>
         <p class="lede">If any of them can't be confirmed, the lead isn't delivered. You never pay for a guess.</p>
       </div>
-      <div class="grid grid-3">
-        <div class="cell"><span class="k">01</span><h3>A real, active business</h3><p>Confirmed open and operating, with a working website or listing, not a dead entry from an old database.</p></div>
-        <div class="cell"><span class="k">02</span><h3>The right person</h3><p>The owner, manager or buyer who actually decides, by name and role.</p></div>
-        <div class="cell"><span class="k">03</span><h3>A verified email</h3><p>Checked to accept mail before delivery, so your outreach doesn't bounce and hurt your sending reputation.</p></div>
-        <div class="cell"><span class="k">04</span><h3>A checked phone number</h3><p>A number confirmed to reach the business, marked as direct line or main office.</p></div>
-        <div class="cell"><span class="k">05</span><h3>Why they fit</h3><p>Size, location, services and the signal that makes them worth a call this month.</p></div>
-        <div class="cell"><span class="k">06</span><h3>Where it came from</h3><p>The public sources used, so you can trust it and so it can be checked again later.</p></div>
+      <div class="cols cols-2 rule">
+        <div>
+            <div class="record" role="group" aria-label="Example of a verified lead record">
+              <div class="rt"><span>Verified lead</span><span>Example</span></div>
+              <dl>
+                <dt>Company</dt><dd>Commercial HVAC contractor, 25 staff</dd>
+                <dt>Decision maker</dt><dd>Operations manager, named</dd>
+                <dt>Email</dt><dd><span class="ok">Verified, direct</span></dd>
+                <dt>Phone</dt><dd><span class="ok">Checked, direct line</span></dd>
+                <dt>Fit</dt><dd>Service area overlaps yours, fleet of 12 vans</dd>
+                <dt>Why now</dt><dd>Posted three technician openings this month</dd>
+                <dt>Sources</dt><dd>Company site, job board, state registry</dd>
+              </dl>
+              <p class="cap">Illustrative example. Real records carry full names and direct contact details.</p>
+            </div>
+        </div>
+        <div>
+          <ol class="order">
+            <li><div><b>A real, active business</b><span>Confirmed open and operating, with a working website or listing, not a dead entry from an old database.</span></div></li>
+            <li><div><b>The right person</b><span>The owner, manager or buyer who actually decides, by name and role.</span></div></li>
+            <li><div><b>A verified email</b><span>Checked to accept mail before delivery, so your outreach doesn't bounce and hurt your sending reputation.</span></div></li>
+            <li><div><b>A checked phone number</b><span>A number confirmed to reach the business, marked as direct line or main office.</span></div></li>
+            <li><div><b>Why they fit</b><span>Size, location, services and the signal that makes them worth a call this month.</span></div></li>
+            <li><div><b>Where it came from</b><span>The public sources used, so you can trust it and so it can be checked again later.</span></div></li>
+          </ol>
+        </div>
       </div>
     </div>
   </div>
@@ -116,13 +132,13 @@
       <div class="cols cols-2 rule">
         <div>
           <p class="eyebrow">Pricing</p>
-          <h2>One flat monthly price, in writing.</h2>
-          <p>The price depends on how many verified leads you need each month and how hard your ideal customer is to research. You'll get the number on the first call, along with exactly what it includes.</p>
+          <h2>Pay only for verified clients.</h2>
+          <p>Our main plan is simple. You pay when a lead we delivered becomes your paying client, and nothing for the leads that don't. Every lead we send is tracked in a shared sheet, so both of us can see what closed.</p>
           <ul class="ticks">
-            <li>No setup fee and no per-lead bidding</li>
-            <li>Month to month, cancel with notice</li>
+            <li>Nothing owed for leads that don't become clients</li>
+            <li>Every lead tracked in a sheet you can see</li>
             <li>Leads are yours and never resold to anyone else</li>
-            <li>Add marketing or outreach any time, or never</li>
+            <li>Other payment plans available if you'd prefer</li>
           </ul>
         </div>
         <div>
