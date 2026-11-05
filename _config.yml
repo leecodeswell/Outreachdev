@@ -1,0 +1,8 @@
+# GitHub Pages build settings. Keeps working files off the public website.
+# (They are still visible in the GitHub repository, which is public.)
+exclude:
+  - docs
+  - src
+  - tools
+  - README.md
+  - REDIRECTS.txt
