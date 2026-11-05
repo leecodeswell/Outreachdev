@@ -27,6 +27,27 @@
     });
   }
 
+  // ---- Glass lighting: a soft highlight that follows the pointer across each pane
+  if (window.matchMedia && matchMedia("(hover: hover) and (pointer: fine)").matches &&
+      !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.querySelectorAll(".pane").forEach(function (pane) {
+      var raf = 0;
+      pane.addEventListener("pointermove", function (e) {
+        if (raf) return;
+        raf = requestAnimationFrame(function () {
+          raf = 0;
+          var r = pane.getBoundingClientRect();
+          pane.style.setProperty("--mx", (e.clientX - r.left) + "px");
+          pane.style.setProperty("--my", (e.clientY - r.top) + "px");
+        });
+      });
+      pane.addEventListener("pointerleave", function () {
+        pane.style.removeProperty("--mx");
+        pane.style.removeProperty("--my");
+      });
+    });
+  }
+
   // ---- Reveal on scroll (progressive; content is visible without JS/IO)
   var items = document.querySelectorAll(".reveal");
   if ("IntersectionObserver" in window && items.length) {

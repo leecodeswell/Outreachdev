@@ -52,26 +52,55 @@ p{margin:0 0 1em}
 .sketch.faint img{opacity:.6}
 
 /* ---------- The glass pane ----------
-   Clear frosted glass: almost no fill, heavy blur, a fine frosted grain and a thin
-   light edge. Whatever sits behind (the sketches) shows through as soft shapes. */
-.pane{position:relative;border-radius:var(--radius);padding:clamp(24px,5vw,68px);
-  background:linear-gradient(160deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,.08) 55%,rgba(255,255,255,.14) 100%);
-  border:1px solid rgba(255,255,255,.5);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.75),inset 0 0 0 1px rgba(255,255,255,.06),
-    0 1px 2px rgba(80,35,8,.06),0 30px 70px -30px rgba(80,35,8,.30)}
+   Clear glass lit from the top-left: a light falloff across the surface, one soft
+   sheen band, warm bounce light bottom-right, a rim that is brightest at the corners,
+   a crisp specular line on the top edge, and a highlight that follows the pointer.
+   Light blur only, so the sketches stay readable through the glass. */
+.pane{position:relative;border-radius:var(--radius);padding:clamp(24px,5vw,68px);--mx:20%;--my:0%;
+  background:
+    radial-gradient(110% 85% at 0% 0%,rgba(255,255,255,.46),rgba(255,255,255,0) 55%),
+    linear-gradient(118deg,rgba(255,255,255,0) 32%,rgba(255,255,255,.24) 42%,rgba(255,255,255,.06) 48%,rgba(255,255,255,0) 56%),
+    linear-gradient(118deg,rgba(255,255,255,0) 60%,rgba(255,255,255,.12) 64%,rgba(255,255,255,0) 68%),
+    radial-gradient(70% 60% at 100% 100%,rgba(255,226,200,.22),rgba(255,226,200,0) 60%),
+    linear-gradient(180deg,rgba(140,70,25,0) 55%,rgba(140,70,25,.06) 100%),
+    linear-gradient(160deg,rgba(255,255,255,.12),rgba(255,255,255,.03));
+  border:1px solid rgba(140,70,25,.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 1px 0 0 rgba(255,255,255,.45),
+    inset -1px 0 0 rgba(255,255,255,.18),
+    inset 0 -1px 0 rgba(255,255,255,.22),
+    inset -2px -2px 0 -1px rgba(140,70,25,.10),
+    inset 0 0 22px rgba(255,255,255,.16),
+    inset 0 -30px 50px -30px rgba(90,40,10,.12),
+    0 1px 1px rgba(80,35,8,.05),
+    0 12px 24px -12px rgba(80,35,8,.12),
+    0 40px 80px -36px rgba(80,35,8,.32)}
 @supports (backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px)){
-  .pane{-webkit-backdrop-filter:blur(18px) saturate(1.35);backdrop-filter:blur(18px) saturate(1.35)}
+  .pane{-webkit-backdrop-filter:blur(8px) saturate(1.25) brightness(1.04);backdrop-filter:blur(8px) saturate(1.25) brightness(1.04)}
 }
-/* frosted grain */
-.pane::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;opacity:.32;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-/* thin light catching the top edge */
-.pane::after{content:"";position:absolute;top:0;left:6%;right:6%;height:1px;pointer-events:none;z-index:2;
-  background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.95) 50%,rgba(255,255,255,0))}
+/* frosted grain, a glow just under the top edge, and the pointer highlight */
+.pane::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(420px circle at var(--mx) var(--my),rgba(255,255,255,.20),rgba(255,255,255,0) 60%),
+    linear-gradient(180deg,rgba(255,255,255,.28) 0,rgba(255,255,255,0) 60px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:auto,auto,180px 180px;opacity:.9;mix-blend-mode:normal}
+/* polished rim: brightest at the top-left and bottom-right corners */
+.pane::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.3px;pointer-events:none;z-index:2;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,0) 6%,#fff 35%,#fff 55%,rgba(255,255,255,0) 94%) top/100% 1.3px no-repeat,
+    linear-gradient(135deg,#fff 0%,rgba(255,255,255,.55) 14%,rgba(255,255,255,.10) 38%,rgba(255,255,255,.06) 60%,rgba(255,226,200,.45) 86%,rgba(255,255,255,.9) 100%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+          mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
 .pane>*{position:relative;z-index:1}
-.pane.tint{color:#fff;border-color:rgba(255,200,160,.45);
-  background:linear-gradient(160deg,rgba(214,86,20,.78) 0%,rgba(178,58,10,.72) 100%);
-  box-shadow:inset 0 1px 0 rgba(255,220,190,.6),0 30px 70px -30px rgba(80,35,8,.45)}
+.pane.tint{color:#fff;
+  background:
+    radial-gradient(120% 90% at 0% 0%,rgba(255,255,255,.26),rgba(255,255,255,0) 55%),
+    linear-gradient(118deg,rgba(255,255,255,0) 34%,rgba(255,255,255,.12) 44%,rgba(255,255,255,0) 58%),
+    linear-gradient(160deg,rgba(220,92,24,.80) 0%,rgba(178,58,10,.74) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,225,200,.95),inset 1px 0 0 rgba(255,210,180,.45),inset 0 0 22px rgba(255,200,160,.18),
+    0 12px 24px -12px rgba(80,35,8,.2),0 40px 80px -36px rgba(80,35,8,.45)}
 .pane.tint h2,.pane.tint h3,.pane.tint p{color:#fff}
 .pane.tint .eyebrow{color:#FFE2CB}
 @media (prefers-reduced-transparency:reduce){
