@@ -19,7 +19,7 @@ const ORG = {
       "@id": SITE + "/#org",
       "name": "Pari",
       "alternateName": ["Pari Lead Generation & Marketing", "Outreachdev"],
-      "slogan": "Verified leads and honest marketing for businesses ready to grow.",
+      "slogan": "Verified leads and marketing for businesses ready to grow.",
       "url": SITE + "/",
       "logo": SITE + "/assets/icons/icon-512.png",
       "image": SITE + "/assets/og-image.jpg",
