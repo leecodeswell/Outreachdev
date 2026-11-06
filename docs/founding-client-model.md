@@ -1,16 +1,17 @@
 # The founding client model: verified leads, client sells
 
-Written November 6, 2026 for Lee Thompson / Pari. Goes with
+Written November 6, 2026 for Lee Thompson / Pari, revised the same day for the 3% fee. Goes with
 `docs/agreements/founding-client-agreement.pdf`.
 
 ## 1. The model in one paragraph
 
 Pari researches and verifies business leads that match a client's ideal customer, then delivers
 them in writing. The client contacts the leads and makes the sale. Pari checks outcomes through
-the client's CRM, or through contract and invoice copies if they have no CRM. The first three
-customers a client wins from Pari's leads are free. After that the client pays a flat fee per won
-customer. In exchange for the free start, the client gives an honest testimonial and lets Pari
-publish real results. Outreach and sales by Pari are a separate offer on a monthly retainer.
+the client's CRM, or through contract, invoice and payment copies if they have no CRM. The first
+three customers a client wins from Pari's leads are free. From the fourth, Pari earns 3% of what
+each new customer pays the client. Once a client has a track record, the plan is to move them to a
+monthly retainer. In exchange for the free start, the client gives an honest testimonial and lets
+Pari publish real results. Outreach and sales by Pari are a separate offer on their own retainer.
 
 ## 2. Who does what
 
@@ -22,8 +23,8 @@ publish real results. Outreach and sales by Pari are a separate offer on a month
 | Deliver leads | Sends them by email or on a Notion page, records the delivery date | Picks email or Notion once |
 | Contact leads | Nothing | Calls and emails them, following CAN-SPAM, TCPA and Do Not Call rules |
 | Sell and do the work | Nothing | Everything |
-| Track outcomes | Checks the CRM monthly, keeps the master record | Gives read-only CRM access, or sends contracts and invoices when asked |
-| Bill | Sends a monthly statement of won clients | Pays within 15 days of getting paid by the won client |
+| Track outcomes | Checks the CRM monthly for won jobs and amounts paid, keeps the master record | Gives read-only CRM access, or sends contracts, invoices and payment records when asked |
+| Bill | Sends a monthly statement: won clients, amounts paid, 3% due | Pays each 3% within 15 days of receiving the payment it is based on |
 
 ## 3. Setup from the client's side: about 25 minutes, once
 
@@ -40,14 +41,16 @@ which is the point of hiring you.
 
 ### Once, for every client
 - **DocuSign template** of the agreement, with fields for the agreement number, dates, client
-  details, ideal customer, leads per month, delivery choice and the per-client fee.
+  details, ideal customer, leads per month and delivery choice. The fee is fixed at 3%, so there
+  is no fee blank to fill in.
 - **Notion lead database.** One database with a Client property, so every client's leads live
   in one place. Suggested properties:
   - Client, Business name, Decision maker, Title, Email, Phone, Website, City
   - Why they fit (one line)
   - Date delivered (starts the 12-month window)
   - Status: Delivered / Already known (replaced) / Bad lead (replaced) / Contacted / Quoted / Won / Lost
-  - Won date, Job value (optional), Fee owed, Fee paid
+  - Won client number (1, 2, 3 are free), Won date, Job value
+  - Payments received by the client (date and amount), 3% owed, Fee paid
 - **A client view** of that database for each client who picks Notion, shared only with them as a
   guest. Do not use Notion's public "share to web" link: it puts contact details on an open URL.
 - **Lead delivery email template** for clients who pick email: a short note plus a CSV or table
@@ -64,8 +67,10 @@ which is the point of hiring you.
 1. Deliver leads in small batches (weekly works well) up to the agreed monthly number.
 2. Replace any lead the client flags within the windows in the agreement (3 business days for
    "already known", 14 days for "failed the checks").
-3. Check the CRM against your delivered list. Mark Won and Lost.
-4. Send the monthly statement: leads delivered, won clients, fees due.
+3. Check the CRM against your delivered list. Mark Won and Lost, and record every payment the
+   client received from a won client that month.
+4. Send the monthly statement: leads delivered, won clients, payments received, 3% due on
+   each. Won clients 1 to 3 show as $0.
 5. Ask one question: "How many of this month's leads have you contacted?" (see section 7).
 
 ## 5. Why no tracking numbers are needed
@@ -73,8 +78,9 @@ which is the point of hiring you.
 Your Notion database is the record. Every delivered lead has a business name, a person and a date
 delivered, and the delivery email or Notion entry is the written proof. When you check the
 client's CRM, you match on business name. If it shows a signed job with a business you delivered
-within the last 12 months, it is a won client and a fee is owed. The CRM's own dates show when the
-job was signed, so there is nothing to argue about.
+within the last 12 months, it is a won client. From the fourth won client on, the CRM's payment
+records give the amounts, and 3% of each is owed. The CRM's own dates show when the job was signed
+and paid, so there is nothing to argue about.
 
 ## 6. What makes a lead "verified"
 
@@ -104,17 +110,26 @@ at follow-up, so the most likely way this fails is leads sitting unused. Ways to
 
 ## 8. Pricing
 
-- **Founding offer**: first 3 won clients free, then a flat fee per won client.
-- **Setting the per-client fee**: tie it to the client's typical job. A rough rule is 5 to 10% of
-  an average job, with a floor. For example, $300 for flooring jobs around $5,000, and $500 to
-  $1,000 for commercial roofing jobs above $10,000. For comparison, published pay-per-appointment
-  prices run $300 to $900, and a won client is worth more than an appointment.
+- **Founding offer**: the first 3 won clients are free, for good. No fee is ever owed on anything
+  those three pay the client.
+- **From the fourth won client**: 3% of every payment that customer makes to the client for work
+  signed within 12 months of the lead's delivery. That includes deposits, progress payments, change
+  orders and repeat jobs in that window, before sales tax. Refunds are credited back.
+- **What 3% looks like**: a $5,000 flooring job pays Pari $150, a $15,000 roof $450, and a $60,000
+  commercial roof $1,800. Because 3% is small on small jobs, the model works best with clients
+  whose jobs run $10,000 and up, or whose customers come back for repeat work.
+- **Why a percentage**: it scales with the client's job size, so there is no fee to negotiate, and
+  it is easy to say yes to. The cost is that you need amounts, not just a yes or no, so the CRM or
+  invoices have to show what was paid.
 - **Leads per month during the founding period**: 20 to 40 is a sensible range. Enough to win 3
   clients in 90 days if they are worked, not so many that you give away a month of research.
-- **After the founding period**: keep pay-per-won-client, or move good clients to a monthly fee
-  for a set number of leads once you know your close rates.
-- **Retainer (outreach and sales by Pari)**: a separate monthly agreement, priced on hours and
-  volume. The research notes put comparable agency retainers at $2,000 to $3,750 a month.
+- **Moving to a retainer**: after a few months at 3%, you know a client's close rate and job sizes.
+  Offer a flat monthly fee for a set number of leads, priced near what 3% has been earning you
+  each month. It gives the client a predictable cost and gives you steady income without
+  checking payments. It is a new written agreement, and it replaces the 3% for leads delivered
+  after it starts.
+- **Outreach and sales by Pari**: a separate retainer, priced on hours and volume. The research
+  notes put comparable agency retainers at $2,000 to $3,750 a month.
 
 ## 9. Enforcement and disputes
 
@@ -125,6 +140,7 @@ at follow-up, so the most likely way this fails is leads sitting unused. Ways to
 | A won job is missing from the CRM | Ask for the contract or invoice, which they must send within 5 business days. You may also ask the lead whether their job went ahead. |
 | They signed through a different person at the same company | Still counts. The agreement covers related contacts and companies. |
 | They end the agreement, then sign a lead later | Fee still owed for any lead won within 12 months of delivery. Keep checking for the 12 months. |
+| They say a job was smaller than it was | The CRM's payment records or the invoices settle it, and the agreement requires payment records on request. |
 | They refuse CRM access or invoice copies | That is a breach of the agreement. Stop delivering leads, and a lawyer letter is the next step. |
 
 ## 10. Compliance notes
@@ -142,10 +158,11 @@ at follow-up, so the most likely way this fails is leads sitting unused. Ways to
 
 ## 11. Your first 30 days
 
-1. Set the per-client fee and the founding leads-per-month number.
+1. Set the founding leads-per-month number (the fee is fixed at 3%).
 2. Have the agreement reviewed.
 3. Build the DocuSign template and the Notion lead database.
 4. Make a list of 20 to 30 contractors to pitch (roofing, flooring and other trades in the area).
 5. Pitch by phone: "I find and verify commercial customers for contractors. Your first three
-   customers from my leads are free. If they work out, I ask for an honest testimonial."
+   customers from my leads are free. After that it's 3% of what each new customer pays you, and
+   nothing if they don't buy. If they work out, I ask for an honest testimonial."
 6. Sign 1 to 3 founding clients and deliver the first batch within a week of each kickoff.
