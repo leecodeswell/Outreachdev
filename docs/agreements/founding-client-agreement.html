@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Founding Client Agreement | Pari</title>
+<!-- Render to PDF: python tools/render-agreement.py -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap">
+<style>
+  @page{size:Letter;margin:0}
+  :root{--ground:#1E1F22;--panel:#26272B;--rule:#3B3C41;--rule-soft:#2F3034;--ink:#F4F4F5;--ink-2:#C9C9CD;--muted:#8E8F95;--line:#6A6B71}
+  *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  html,body{margin:0;background:var(--ground);color:var(--ink-2)}
+  body{font:400 8.35pt/1.46 Inter,"Segoe UI",Arial,sans-serif}
+  .page{width:8.5in;height:11in;padding:.42in .5in .36in;display:flex;flex-direction:column;overflow:hidden;
+    background:radial-gradient(120% 60% at 0% 0%,#2A2B2F 0%,rgba(42,43,47,0) 60%),var(--ground)}
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:.3in;padding-bottom:.12in;border-bottom:1px solid var(--rule)}
+  .brand{display:flex;align-items:center;gap:8px;font:600 11pt Fraunces,Georgia,serif;color:var(--ink);letter-spacing:.02em}
+  .mark{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;background:linear-gradient(180deg,#5A5B61,#3A3B40);color:#fff;font:700 9.5pt Fraunces,Georgia,serif;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+  h1{margin:.07in 0 0;font:600 20pt/1.05 Fraunces,Georgia,serif;color:var(--ink);letter-spacing:-.005em}
+  .eyebrow{font:500 6.4pt "IBM Plex Mono",Consolas,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .meta{text-align:right;font:400 6.8pt/1.7 "IBM Plex Mono",Consolas,monospace;color:var(--muted)}
+  .meta b{color:var(--ink-2);font-weight:500}
+  .parties{display:grid;grid-template-columns:1fr 1fr;gap:.3in;padding:.11in 0 .1in;border-bottom:1px solid var(--rule)}
+  .parties p{margin:.03in 0 0}
+  .fill{display:flex;align-items:flex-end;gap:6px;margin-top:7px}
+  .fill span{white-space:nowrap;color:var(--muted);font-size:7.6pt}
+  .fill i{flex:1;border-bottom:1px solid var(--line);height:10px}
+  .lead{margin:.09in 0 0;color:var(--ink-2)}
+  .body{columns:2;column-gap:.3in;column-rule:1px solid var(--rule-soft);padding-top:.1in;flex:1}
+  section{break-inside:avoid;margin:0 0 .115in}
+  h2{margin:0 0 .025in;font:600 9.2pt/1.25 Inter,"Segoe UI",Arial,sans-serif;color:var(--ink);display:flex;gap:7px;align-items:baseline}
+  h2 .n{font:500 6.6pt "IBM Plex Mono",Consolas,monospace;color:var(--muted);letter-spacing:.06em}
+  p{margin:0 0 .035in}
+  b,strong{color:var(--ink);font-weight:600}
+  ul{margin:.02in 0 .03in;padding-left:12px}
+  li{margin:0 0 .02in}
+  li::marker{color:var(--muted)}
+  .box{border:1px solid var(--rule);background:var(--panel);border-radius:6px;padding:.07in .09in;margin:.04in 0 .03in}
+  .fee{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;align-items:end}
+  .fee .k{color:var(--muted);font:500 6.4pt "IBM Plex Mono",Consolas,monospace;letter-spacing:.1em;text-transform:uppercase}
+  .fee .v{color:var(--ink);font-weight:600}
+  .fee .v i{display:inline-block;width:.75in;border-bottom:1px solid var(--line);height:9px}
+  .sign{display:grid;grid-template-columns:1fr 1fr;gap:.3in;margin-top:.06in;border-top:1px solid var(--rule);padding-top:.1in}
+  .sign h3{margin:0 0 2px;font:500 6.4pt "IBM Plex Mono",Consolas,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .sign .who{color:var(--ink);font-weight:600;font-size:8pt}
+  .sign .fill{margin-top:13px}
+  footer{display:flex;justify-content:space-between;margin-top:.1in;padding-top:.07in;border-top:1px solid var(--rule-soft);font:400 6.3pt "IBM Plex Mono",Consolas,monospace;color:var(--muted);letter-spacing:.04em}
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div>
+      <div class="brand"><span class="mark">P</span>Pari</div>
+      <h1>Founding Client Agreement</h1>
+    </div>
+    <div class="meta">
+      <div class="eyebrow">Agreement no. <b>FC-____</b></div>
+      Effective date: ____ / ____ / ________<br>
+      Founding period ends: ____ / ____ / ________
+    </div>
+  </header>
+
+  <div class="parties">
+    <div>
+      <div class="eyebrow">Pari</div>
+      <p><b>Lee Thompson, doing business as Pari</b><br>500 Bedford St., Clear Lake, IA 50428<br>hello@parileads.com · 641-596-0111</p>
+    </div>
+    <div>
+      <div class="eyebrow">Client</div>
+      <div class="fill"><span>Business name</span><i></i></div>
+      <div class="fill"><span>Owner / contact</span><i></i></div>
+      <div class="fill"><span>Address</span><i></i></div>
+      <div class="fill"><span>Email</span><i></i><span>Phone</span><i></i></div>
+    </div>
+  </div>
+
+  <p class="lead">Pari finds and introduces new customers to the Client. The Client pays nothing for the first three customers won. In return, the Client gives honest feedback and a testimonial. This page sets out how that works.</p>
+
+  <div class="body">
+    <section>
+      <h2><span class="n">01</span>What Pari does</h2>
+      <ul>
+        <li>Researches businesses and decision makers that match the Ideal Customer in Section 2.</li>
+        <li>Contacts them by phone and email under Pari's own name and sending accounts, says that Pari is working with the Client, and gives every contact an easy way to opt out.</li>
+        <li>Qualifies interested prospects (need, timing, location, decision maker), books an estimate or site visit on the Client's calendar, and introduces both parties in one email.</li>
+      </ul>
+      <p>Pari contacts businesses only, not consumers at home. Pari does not quote prices, promise terms, timelines or warranties, or sign anything for the Client. The Client handles estimates, pricing, the sale and the work.</p>
+    </section>
+
+    <section>
+      <h2><span class="n">02</span>Ideal customer</h2>
+      <div class="fill"><span>Customer types</span><i></i></div>
+      <div class="fill"><span>Job types</span><i></i></div>
+      <div class="fill"><span>Service area</span><i></i><span>Min. job size $</span><i style="flex:.45"></i></div>
+    </section>
+
+    <section>
+      <h2><span class="n">03</span>Definitions</h2>
+      <p><b>Introduced Prospect:</b> a person or business Pari introduces to the Client in writing. If the Client already had them as a customer, or was quoting or in talks with them in the past 12 months, the Client has <b>3 business days</b> after the introduction to say so in writing. Otherwise they count as introduced.</p>
+      <p><b>Won Client:</b> an Introduced Prospect who signs a contract with the Client, or pays a deposit or first payment, within <b>12 months</b> of the introduction. This includes contracts signed through anyone connected to the prospect.</p>
+    </section>
+
+    <section>
+      <h2><span class="n">04</span>The founding offer and fees</h2>
+      <div class="box fee">
+        <span class="k">Won Clients 1–3</span><span class="v">No charge</span>
+        <span class="k">Each one after</span><span class="v">$ <i></i> per Won Client</span>
+      </div>
+      <p>A fee is due within <b>15 days</b> after the Client receives the first payment from a Won Client. If a job is cancelled and the deposit is fully refunded before work starts, no fee is owed. Fees are paid by check, ACH or card to Pari.</p>
+    </section>
+
+    <section>
+      <h2><span class="n">05</span>The Client agrees to</h2>
+      <ul>
+        <li>Reply to each introduction within 1 business day and keep or promptly reschedule booked appointments.</li>
+        <li>Update the shared tracking sheet within 3 business days of each appointment: whether the prospect showed up, was quoted and signed.</li>
+        <li>After the third Won Client, or at the end of the founding period, give an <b>honest</b> written testimonial. Pari may name the Client and share real results in its marketing. The Client reviews anything before it is published, and Pari will disclose that the Client received services at no cost.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="n">06</span>Term and ending</h2>
+      <p>The founding period lasts <b>90 days</b> or until 3 Won Clients, whichever comes first. After that, the agreement continues at the per-client fee above unless either party ends it. Either party may end it at any time with <b>7 days' written notice</b>, and email counts. Fees remain owed for any Introduced Prospect who becomes a Won Client within 12 months of introduction, even after this agreement ends.</p>
+    </section>
+
+    <section>
+      <h2><span class="n">07</span>Results, data and confidentiality</h2>
+      <p>Pari does not guarantee a number of appointments or Won Clients. Pari's research, lists and methods stay Pari's. The Client may use prospect details Pari shares only to pursue work with that prospect. Each party keeps the other's pricing, customer and business information confidential.</p>
+    </section>
+
+    <section>
+      <h2><span class="n">08</span>General</h2>
+      <p>Pari is an independent business, not the Client's employee or agent, and neither party can bind the other. The Client is responsible for its own work, licenses, insurance and warranties. Neither party is liable to the other for indirect or lost-profit damages. Iowa law governs. This page is the whole agreement, and changes must be in writing and signed by both parties.</p>
+    </section>
+  </div>
+
+  <div class="sign">
+    <div>
+      <h3>For Pari</h3>
+      <div class="who">Lee Thompson, Founder</div>
+      <div class="fill"><span>Signature</span><i></i><span>Date</span><i style="flex:.4"></i></div>
+    </div>
+    <div>
+      <h3>For the Client</h3>
+      <div class="fill" style="margin-top:4px"><span>Name and title</span><i></i></div>
+      <div class="fill"><span>Signature</span><i></i><span>Date</span><i style="flex:.4"></i></div>
+    </div>
+  </div>
+
+  <footer><span>PARI · VERIFIED LEADS &amp; MARKETING</span><span>parileads.com · hello@parileads.com · 641-596-0111</span></footer>
+</div>
+</body>
+</html>
