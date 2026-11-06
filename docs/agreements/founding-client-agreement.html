@@ -10,8 +10,8 @@
   :root{--ground:#1E1F22;--panel:#26272B;--rule:#3B3C41;--rule-soft:#2F3034;--ink:#F4F4F5;--ink-2:#C9C9CD;--muted:#8E8F95;--line:#6A6B71}
   *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   html,body{margin:0;background:var(--ground);color:var(--ink-2)}
-  body{font:400 8.35pt/1.46 Inter,"Segoe UI",Arial,sans-serif}
-  .page{width:8.5in;height:11in;padding:.42in .5in .36in;display:flex;flex-direction:column;overflow:hidden;
+  body{font:400 7.75pt/1.4 Inter,"Segoe UI",Arial,sans-serif}
+  .page{width:8.5in;height:11in;padding:.4in .5in .32in;display:flex;flex-direction:column;overflow:hidden;
     background:radial-gradient(120% 60% at 0% 0%,#2A2B2F 0%,rgba(42,43,47,0) 60%),var(--ground)}
   header{display:flex;justify-content:space-between;align-items:flex-end;gap:.3in;padding-bottom:.12in;border-bottom:1px solid var(--rule)}
   .brand{display:flex;align-items:center;gap:8px;font:600 11pt Fraunces,Georgia,serif;color:var(--ink);letter-spacing:.02em}
@@ -27,7 +27,7 @@
   .fill i{flex:1;border-bottom:1px solid var(--line);height:10px}
   .lead{margin:.09in 0 0;color:var(--ink-2)}
   .body{columns:2;column-gap:.3in;column-rule:1px solid var(--rule-soft);padding-top:.1in;flex:1}
-  section{break-inside:avoid;margin:0 0 .115in}
+  section{break-inside:avoid;margin:0 0 .09in}
   h2{margin:0 0 .025in;font:600 9.2pt/1.25 Inter,"Segoe UI",Arial,sans-serif;color:var(--ink);display:flex;gap:7px;align-items:baseline}
   h2 .n{font:500 6.6pt "IBM Plex Mono",Consolas,monospace;color:var(--muted);letter-spacing:.06em}
   p{margin:0 0 .035in}
@@ -43,7 +43,7 @@
   .sign{display:grid;grid-template-columns:1fr 1fr;gap:.3in;margin-top:.06in;border-top:1px solid var(--rule);padding-top:.1in}
   .sign h3{margin:0 0 2px;font:500 6.4pt "IBM Plex Mono",Consolas,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
   .sign .who{color:var(--ink);font-weight:600;font-size:8pt}
-  .sign .fill{margin-top:13px}
+  .sign .fill{margin-top:11px}
   footer{display:flex;justify-content:space-between;margin-top:.1in;padding-top:.07in;border-top:1px solid var(--rule-soft);font:400 6.3pt "IBM Plex Mono",Consolas,monospace;color:var(--muted);letter-spacing:.04em}
 </style>
 </head>
@@ -75,30 +75,31 @@
     </div>
   </div>
 
-  <p class="lead">Pari finds and introduces new customers to the Client. The Client pays nothing for the first three customers won. In return, the Client gives honest feedback and a testimonial. This page sets out how that works.</p>
+  <p class="lead">Pari researches and verifies leads for the Client. The Client contacts them and makes the sale. The Client pays nothing for the first three customers won from Pari's leads, and in return gives an honest testimonial and lets Pari check results. This page sets out how that works.</p>
 
   <div class="body">
     <section>
-      <h2><span class="n">01</span>What Pari does</h2>
+      <h2><span class="n">01</span>What Pari delivers</h2>
       <ul>
-        <li>Researches businesses and decision makers that match the Ideal Customer in Section 2.</li>
-        <li>Contacts them by phone and email under Pari's own name and sending accounts, says that Pari is working with the Client, and gives every contact an easy way to opt out.</li>
-        <li>Qualifies interested prospects (need, timing, location, decision maker), books an estimate or site visit on the Client's calendar, and introduces both parties in one email.</li>
+        <li>Researches businesses that match the Ideal Customer in Section 2 and names the decision maker at each one.</li>
+        <li>Checks every lead before delivery: the business is active and in the service area, the decision maker is current, the email is verified and the phone number is checked.</li>
+        <li>Delivers leads in writing, by email or on a shared Notion page, and records the date each lead is delivered.</li>
       </ul>
-      <p>Pari contacts businesses only, not consumers at home. Pari does not quote prices, promise terms, timelines or warranties, or sign anything for the Client. The Client handles estimates, pricing, the sale and the work.</p>
+      <p>Pari does not contact leads, quote, sell or sign anything for the Client. The Client handles all contact, estimates, sales and the work. If the Client wants Pari to run outreach or sales, that is a separate monthly retainer agreement.</p>
     </section>
 
     <section>
-      <h2><span class="n">02</span>Ideal customer</h2>
+      <h2><span class="n">02</span>Ideal customer and delivery</h2>
       <div class="fill"><span>Customer types</span><i></i></div>
       <div class="fill"><span>Job types</span><i></i></div>
       <div class="fill"><span>Service area</span><i></i><span>Min. job size $</span><i style="flex:.45"></i></div>
+      <div class="fill"><span>Leads per month, up to</span><i style="flex:.5"></i><span>Delivery:&nbsp; ☐ Email&nbsp; ☐ Notion</span></div>
     </section>
 
     <section>
       <h2><span class="n">03</span>Definitions</h2>
-      <p><b>Introduced Prospect:</b> a person or business Pari introduces to the Client in writing. If the Client already had them as a customer, or was quoting or in talks with them in the past 12 months, the Client has <b>3 business days</b> after the introduction to say so in writing. Otherwise they count as introduced.</p>
-      <p><b>Won Client:</b> an Introduced Prospect who signs a contract with the Client, or pays a deposit or first payment, within <b>12 months</b> of the introduction. This includes contracts signed through anyone connected to the prospect.</p>
+      <p><b>Delivered Lead:</b> a business or decision maker Pari delivers to the Client in writing. If the Client already had them as a customer, or was quoting or in talks with them in the past 12 months, the Client has <b>3 business days</b> after delivery to say so in writing. Pari then replaces that lead and it does not count.</p>
+      <p><b>Won Client:</b> a Delivered Lead that signs a contract with the Client, or pays a deposit or first payment, within <b>12 months</b> of delivery. This includes work signed through a different contact or a related company at the same business.</p>
     </section>
 
     <section>
@@ -107,32 +108,37 @@
         <span class="k">Won Clients 1–3</span><span class="v">No charge</span>
         <span class="k">Each one after</span><span class="v">$ <i></i> per Won Client</span>
       </div>
-      <p>A fee is due within <b>15 days</b> after the Client receives the first payment from a Won Client. If a job is cancelled and the deposit is fully refunded before work starts, no fee is owed. Fees are paid by check, ACH or card to Pari.</p>
+      <p>Pari sends a monthly statement of Won Clients. A fee is due within <b>15 days</b> after the Client receives the first payment from a Won Client. If a job is cancelled and the deposit is fully refunded before work starts, no fee is owed.</p>
     </section>
 
     <section>
-      <h2><span class="n">05</span>The Client agrees to</h2>
+      <h2><span class="n">05</span>Lead quality</h2>
+      <p>If a Delivered Lead fails the checks in Section 1, for example the email bounces, the person has left or the business is outside the service area, the Client tells Pari within <b>14 days</b> of delivery and Pari replaces it free. While this agreement runs, Pari gives each lead to one client only in the Client's trade and service area, and never resells it.</p>
+    </section>
+
+    <section>
+      <h2><span class="n">06</span>The Client agrees to</h2>
       <ul>
-        <li>Reply to each introduction within 1 business day and keep or promptly reschedule booked appointments.</li>
-        <li>Update the shared tracking sheet within 3 business days of each appointment: whether the prospect showed up, was quoted and signed.</li>
-        <li>After the third Won Client, or at the end of the founding period, give an <b>honest</b> written testimonial. Pari may name the Client and share real results in its marketing. The Client reviews anything before it is published, and Pari will disclose that the Client received services at no cost.</li>
-        <li><b>Verification:</b> during this agreement and for 12 months after it ends, give Pari read-only access to its CRM or job-tracking system, limited to Introduced Prospects. Without one, the Client sends copies of contracts or invoices for Introduced Prospects within 5 business days of Pari asking. Pari may also check with Introduced Prospects whether their job went ahead.</li>
+        <li>Contact Delivered Leads lawfully, following the CAN-SPAM Act, the Telephone Consumer Protection Act, Do Not Call rules and state law, and honor every opt-out.</li>
+        <li>Use Delivered Leads only for its own business, and not share or resell them.</li>
+        <li><b>Verification:</b> during this agreement and for 12 months after it ends, give Pari read-only access to its CRM or job-tracking system, limited to Delivered Leads. Without one, the Client sends copies of contracts or invoices for Delivered Leads within 5 business days of Pari asking. Pari may also ask a Delivered Lead whether their job went ahead.</li>
+        <li>After the third Won Client, or at the end of the founding period, give an <b>honest</b> written testimonial. Pari may name the Client and share real results. The Client reviews anything before it is published, and Pari will disclose that the Client received services at no cost.</li>
       </ul>
     </section>
 
     <section>
-      <h2><span class="n">06</span>Term and ending</h2>
-      <p>The founding period lasts <b>90 days</b> or until 3 Won Clients, whichever comes first. After that, the agreement continues at the per-client fee above unless either party ends it. Either party may end it at any time with <b>7 days' written notice</b>, and email counts. Fees remain owed for any Introduced Prospect who becomes a Won Client within 12 months of introduction, even after this agreement ends.</p>
+      <h2><span class="n">07</span>Term and ending</h2>
+      <p>The founding period lasts <b>90 days</b> or until 3 Won Clients, whichever comes first. After that, the agreement continues at the per-client fee above unless either party ends it. Either party may end it at any time with <b>7 days' written notice</b>, and email counts. Fees remain owed for any Delivered Lead that becomes a Won Client within 12 months of delivery, even after this agreement ends.</p>
     </section>
 
     <section>
-      <h2><span class="n">07</span>Results, data and confidentiality</h2>
-      <p>Pari does not guarantee a number of appointments or Won Clients. Pari's research, lists and methods stay Pari's. The Client may use prospect details Pari shares only to pursue work with that prospect. Each party keeps the other's pricing, customer and business information confidential.</p>
+      <h2><span class="n">08</span>Results and confidentiality</h2>
+      <p>Pari does not guarantee a number of Won Clients or sales. Pari's research methods stay Pari's. Each party keeps the other's pricing, customer and business information confidential.</p>
     </section>
 
     <section>
-      <h2><span class="n">08</span>General</h2>
-      <p>Pari is an independent business, not the Client's employee or agent, and neither party can bind the other. The Client is responsible for its own work, licenses, insurance and warranties. Neither party is liable to the other for indirect or lost-profit damages. Iowa law governs. This page is the whole agreement, and changes must be in writing and signed by both parties.</p>
+      <h2><span class="n">09</span>General</h2>
+      <p>Pari is an independent business, not the Client's employee or agent, and neither party can bind the other. The Client is responsible for its own outreach, work, licenses, insurance and warranties. Neither party is liable to the other for indirect or lost-profit damages. Iowa law governs. This page is the whole agreement, and changes must be in writing and signed by both parties.</p>
     </section>
   </div>
 
