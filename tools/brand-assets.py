@@ -1,4 +1,4 @@
-# Regenerates favicons and the Open Graph image. Run: python tools/brand-assets.py
+# Regenerates favicons and the Open Graph image from the icon master. Run: python tools/brand-logo.py, then python tools/brand-assets.py
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import numpy as np
 F = 'C:/Windows/Fonts/'
@@ -11,15 +11,10 @@ def grad(w, h, stops):
         out += m[..., None] * (np.array(c0) * (1 - t[..., None]) + np.array(c1) * t[..., None]) * np.ones((1, w, 1))
     return Image.fromarray(out.clip(0, 255).astype(np.uint8))
 def mark(S):
-    s = S * 4
-    g = grad(s, s, [(0, (234, 106, 31)), (.55, (194, 65, 12)), (1, (154, 52, 9))]).convert('RGBA')
-    mask = Image.new('L', (s, s), 0); ImageDraw.Draw(mask).rounded_rectangle([0, 0, s - 1, s - 1], radius=int(s * .26), fill=255)
-    hi = Image.new('L', (s, s), 0); ImageDraw.Draw(hi).ellipse([-s * .3, -s * .75, s * 1.3, s * .42], fill=70)
-    g = Image.composite(Image.new('RGBA', (s, s), (255, 255, 255, 255)), g, hi)
-    d = ImageDraw.Draw(g)
-    f = ImageFont.truetype(F + 'georgiab.ttf', int(s * .66))
-    bb = d.textbbox((0, 0), 'P', font=f)
-    d.text(((s - (bb[2] - bb[0])) / 2 - bb[0], (s - (bb[3] - bb[1])) / 2 - bb[1]), 'P', font=f, fill=(255, 247, 238))
+    """The "p." icon from tools/brand-logo.py, with rounded corners."""
+    s = 1024
+    g = Image.open('assets/brand/pari-icon-1024.png').convert('RGBA').resize((s, s))
+    mask = Image.new('L', (s, s), 0); ImageDraw.Draw(mask).rounded_rectangle([0, 0, s - 1, s - 1], radius=int(s * .22), fill=255)
     out = Image.new('RGBA', (s, s), (0, 0, 0, 0)); out.paste(g, (0, 0), mask)
     return out.resize((S, S), Image.LANCZOS)
 for S in (16, 32, 48, 180, 192, 512):
